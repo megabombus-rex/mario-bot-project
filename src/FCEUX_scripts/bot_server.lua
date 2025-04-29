@@ -1,4 +1,6 @@
 -- bot_server.lua
+Data_table = { 1, 5, 10, 150, 300, 600, 1200 }
+Client = nil
 
 function connect(address, port, laddress, lport)
     local sock, err = socket.tcp()
@@ -23,9 +25,7 @@ function bind(host, port, backlog)
     return sock
 end
 
-function server_loop()
-    --local socket = require("socket.core")
-    local socket = require("socket.core")
+function server_loop(socket)
 
     emu.print(socket)
 
@@ -44,7 +44,7 @@ function server_loop()
 
     emu.print("Connected", server, err)
 
-    -- this is for the newest version
+    -- this is for the newest version (5.4)
     --local server = sock.bind("127.0.0.1", 12345, -1)
     -- create a TCP socket and bind it to the local host, at any port
     --local server = assert(socket.bind("*", 0))
@@ -52,13 +52,12 @@ function server_loop()
     --local ip, port = server:getsockname()
     -- ^ do not use ^
 
-    local client
-    while not client do
-        client = server:accept()
+    while not Client do
+        Client = server:accept()
 
-        if client then
-            client:settimeout(10)
-            local line, err = client:receive()
+        if Client then
+            Client:settimeout(10)
+            local line, err = Client:receive()
             if line then
                 break
             end
@@ -76,10 +75,10 @@ function server_loop()
         local marioX = memory.readbyte(0x006D) * 0x100 + memory.readbyte(0x0086)
     
         -- Send Mario's position to bot
-        client:send(tostring(marioX) .. "\n")
+        Client:send(tostring(marioX) .. "\n")
     
         -- Receive input command from bot (like "right" or "left")
-        local input = client:receive()
+        local input = Client:receive()
     
         if input then
             emu.print("Data from client: " .. input)
@@ -101,8 +100,17 @@ function server_loop()
     end
 end
 
+function send_data_after_loading_savestate()
+    if Data_table and Client then
+        Client:send('mamaaaaaaaaaaa')        
+    end
+end
+
 function main()
-    server_loop()
+    -- savestate in FCEUX - Registers a callback function that runs whenever the user saves a state.
+    savestate.registersave(send_data_after_loading_savestate)
+    local socket = require("socket.core")
+    server_loop(socket)
 end
 
 main()
