@@ -5,4 +5,3 @@ class OutputData:
         self.move_down = move_down
         self.rotate_block = rotate_block
         self.instant_fall = instant_fall
-        pass
