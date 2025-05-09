@@ -1,4 +1,4 @@
-class output_data:
+class OutputData:
     def __init__(self, move_left, move_right, move_down, rotate_block, instant_fall):
         self.move_left = move_left
         self.move_right = move_right
