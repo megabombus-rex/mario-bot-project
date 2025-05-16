@@ -1,4 +1,4 @@
-import game as g
+import game_with_ai as g
 import model.input_data as input
 from blocks import TETROMINOES_INDEXES
 
@@ -7,7 +7,6 @@ from blocks import TETROMINOES_INDEXES
 class AIController:
     def __init__(self, model):
         self.model = model
-        pass
     
     def get_game_data(self, game=g.TetrisGame):
         current_tetromino = game.current_tetromino
@@ -16,4 +15,7 @@ class AIController:
         current_shape_idx = TETROMINOES_INDEXES[current_tetromino.shape]
         next_shape_idx = TETROMINOES_INDEXES[game.next_tetromino.shape]
         
-        game_data = input.InputData(x, y, current_shape_idx, game.fall_speed, game.next_tetromino)
+        self.input = input.InputData(x, y, current_shape_idx, game.fall_speed, current_tetromino.rotation, game.next_tetromino)
+    
+    def get_next_move(self):
+        return self.model(self.input)
