@@ -2,6 +2,8 @@ import pygame
 import sys
 from game.game import TetrisGame
 from game.constants import SCREEN_WIDTH, SCREEN_HEIGHT, TITLE, FPS
+from model.model import Model
+import model.genome
 
 def main():
     # Initialize pygame
@@ -43,4 +45,6 @@ def main():
         clock.tick(FPS)
 
 if __name__ == "__main__":
-    main()
+    #main()
+    model = Model(5, 4, 0.5, 4)
+    print(model.genome.__str__())
