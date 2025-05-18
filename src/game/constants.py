@@ -1,3 +1,5 @@
+from enum import IntEnum
+
 # Game window settings
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 700
@@ -10,12 +12,13 @@ GRID_HEIGHT = 20
 CELL_SIZE = 30
 
 # Movement mapping
-MOVE_LEFT = 0
-MOVE_RIGHT = 1
-ROTATE = 2
-SOFT_DROP = 3
-HARD_DROP = 4
-NO_MOVE = 5
+class Movement(IntEnum):
+    MOVE_LEFT = 0
+    MOVE_RIGHT = 1
+    ROTATE = 2
+    SOFT_DROP = 3
+    HARD_DROP = 4
+    NO_MOVE = 5
 
 # Board position
 BOARD_OFFSET_X = (SCREEN_WIDTH - GRID_WIDTH * CELL_SIZE) // 2

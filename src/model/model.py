@@ -8,12 +8,14 @@ from model.activation_functions import *
 
 class Model:
     # construct a model/network (phenotype) from the genome
-    def __init__(self, genome=Genome):
+    def __init__(self, genome:Genome):
         self.genome = genome
+        self.phenotype = Model.topological_sort(self.genome.nodes, self.genome.connections)
         
     # construct the model/network 
     # max possible starting connections should be low
-    def __init__(self, input_size=int, output_size=int, common_rates=CommonRates):
+    @classmethod
+    def generate_network(self, input_size=int, output_size=int, common_rates=CommonRates):
         input_neurons = []
         output_neurons = []
         connections = []
@@ -40,11 +42,12 @@ class Model:
                 connection = Connection(in_node, out_node, weight=random.random(), innovation_number=0)
                 connections.append(connection)
         
-        self.genome = Genome(nodes=input_neurons + output_neurons, connections=connections)
-        
+        genome = Genome(nodes=input_neurons + output_neurons, connections=connections)
+        return Model(genome=genome)
+    
     def feed_forward(self, input:dict):
         # 1. set inputs to input neurons
-        # 2. sort topologically the network
+        # 2. sort topologically the network - done in the constructor
         # 3.1. sum each neuron input
         # 3.2. apply activation function
         # 3.3. store output
@@ -59,8 +62,7 @@ class Model:
             if node.id in input:
                 node.output = input[node.id]
         
-        # 2.
-        sorted_nodes = self.topological_sort(self.genome.nodes, self.genome.connections)
+        # 2. - implemented elsewhere, not needed
         
         # 3.
         #nodes_without_input = filter(lambda x: x not in input, sorted_nodes)
@@ -73,7 +75,7 @@ class Model:
         #    node.output = node.activation_function(node.input_sum)
         #    print(f'Node {node.id} is a node of type {node.type} and outputs value {node.output}.')
         
-        for node in sorted_nodes:
+        for node in self.phenotype:
             if node.id not in input:  # Skip input nodes
                 node.input_sum = 0.0
                 for conn in node.inputs:
@@ -92,9 +94,9 @@ class Model:
         
         return outputs
         
-    
     # simulate inputs to the neurons to check if they are sorted, this should be called once a change (mutation/crossover) occurs and probably stored
     # this is not for recurrent networks!
+    @classmethod
     def topological_sort(self, nodes=list[Node], connections=list[Connection]):
         graph = defaultdict(list) #
         in_degree = defaultdict(int) # in_degree - amount of connections a node has as inputs
@@ -127,6 +129,6 @@ class Model:
     
     # forward the data
     def __call__(self, input=InputData):
-        self.feed_forward(input.to_dict())
         for connection in self.genome.connections:
             print(f'There is a connection between node {connection.in_node.id} and node {connection.out_node.id} with weight {connection.weight}.')
+        return self.feed_forward(input.to_dict())

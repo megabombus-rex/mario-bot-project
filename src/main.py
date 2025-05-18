@@ -1,12 +1,13 @@
 import pygame
 import sys
-from game.game import TetrisGame
+#from game.game import TetrisGame
 from game.constants import SCREEN_WIDTH, SCREEN_HEIGHT, TITLE, FPS
 from model.model import Model
 from model.input_data import InputData
 from model.common_genome_data import *
+from game.model_scripts.game_with_ai import *
 
-def main():
+def main(seed, ai_model):
     # Initialize pygame
     pygame.init()
     
@@ -18,7 +19,8 @@ def main():
     clock = pygame.time.Clock()
     
     # Create a game instance
-    game = TetrisGame()
+    #game = TetrisGame()
+    game = TetrisGameWithAI(seed=seed, ai_model=ai_model)
     
     # Main game loop
     while True:
@@ -46,8 +48,8 @@ def main():
         clock.tick(FPS)
 
 if __name__ == "__main__":
-    #main()
     common_rates = CommonRates(0.8, 0.1, 0.4, 0.2, 0.5, 3)
-    model = Model(5, 4, common_rates=common_rates)
-    input = InputData(10, 20, 25, 30, 40, 50)
-    model(input=input)
+    model = Model.generate_network(5, 4, common_rates=common_rates)
+    #input = InputData(10, 20, 25, 30, 40, 50)
+    #model(input=input)
+    main(1, model)

@@ -8,10 +8,12 @@ from game.constants import (
     SCREEN_WIDTH, SCREEN_HEIGHT, GRID_HEIGHT, 
     INITIAL_FALL_SPEED, LEVEL_SPEEDUP, POINTS_PER_LINE,
     SOFT_DROP_POINTS, HARD_DROP_POINTS, DEFAULT_SEED,
-    WHITE, BLACK, MOVE_LEFT, MOVE_RIGHT, ROTATE, SOFT_DROP, HARD_DROP, NO_MOVE
+    WHITE, BLACK, Movement
 )
+from model.model import *
+from misc.probability_functions import *
 
-class TetrisGame:
+class TetrisGameWithAI:
     def __init__(self, seed=DEFAULT_SEED, ai_model=None):
         """
         Initialize the Tetris game.
@@ -35,7 +37,7 @@ class TetrisGame:
         self.paused = False
         
         # AI controller
-        self.ai_controller = AIController(model=ai_model)
+        self.ai_controller = AIController(model=ai_model, move_selection_probability_function=Softmax())
         #self.ai_mode = False  # Start with human control
         
         # Create the first tetromino
@@ -213,20 +215,20 @@ class TetrisGame:
         Args:
             move (int): The move to make (0 : left, 1 : right, 2 : rotate, 3 : soft_drop, 4 : hard_drop, 5 no_move)
         """
-        if move == MOVE_LEFT:
+        if move == Movement.MOVE_LEFT:
             self.move_tetromino(-1, 0)
-        elif move == MOVE_RIGHT:
+        elif move == Movement.MOVE_RIGHT:
             self.move_tetromino(1, 0)
-        elif move == ROTATE:
+        elif move == Movement.ROTATE:
             self.rotate_tetromino()
-        elif move == SOFT_DROP:
+        elif move == Movement.SOFT_DROP:
             self.soft_drop = True
-        elif move == HARD_DROP:
+        elif move == Movement.HARD_DROP:
             self.hard_drop()
-        elif move == NO_MOVE:
+        elif move == Movement.NO_MOVE:
             return
         # Reset soft drop after processing
-        if move != SOFT_DROP:
+        if move != Movement.SOFT_DROP:
             self.soft_drop = False
             
     def draw(self, screen):
@@ -296,10 +298,10 @@ class TetrisGame:
         screen.blit(lines_text, (stats_x, stats_y + 60))
         
         # Draw AI mode status
-        ai_text = self.font.render(f"AI Mode: {'ON' if self.ai_mode else 'OFF'}", True, WHITE)
+        ai_text = self.font.render(f"AI Mode: ON", True, WHITE)
         screen.blit(ai_text, (stats_x, stats_y + 90))
         
-                    # Draw controls
+        # Draw controls
         controls_y = 400
         controls = [
             "Controls:",
