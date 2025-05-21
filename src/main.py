@@ -49,7 +49,8 @@ def main(seed, ai_model):
 
 if __name__ == "__main__":
     common_rates = CommonRates(0.8, 0.1, 0.4, 0.2, 0.5, 3)
-    model = Model.generate_network(5, 4, common_rates=common_rates)
+    innovation_db = InnovationDatabase()
+    model = Model.generate_network(input_size=5, output_size=4, common_rates=common_rates, innovation_db=innovation_db)
     #input = InputData(10, 20, 25, 30, 40, 50)
     #model(input=input)
     main(1, model)

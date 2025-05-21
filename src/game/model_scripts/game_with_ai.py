@@ -12,6 +12,7 @@ from game.constants import (
 )
 from model.model import *
 from misc.probability_functions import *
+import misc.visualizers
 
 class TetrisGameWithAI:
     def __init__(self, seed=DEFAULT_SEED, ai_model=None):
@@ -201,6 +202,9 @@ class TetrisGameWithAI:
             if not self.move_tetromino(0, 1):
                 # If the tetromino can't move down, lock it in place
                 self.lock_tetromino()
+                #if random.random() > 0.5:
+                    #self.ai_controller.model.genome.mutation_add_node() # test
+                    #misc.visualizers.visualize_phenotype(self.ai_controller.model.genome, title="Phenotype Visualization")
             
             # Add points for soft drop
             if self.soft_drop:

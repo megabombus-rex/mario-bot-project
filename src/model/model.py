@@ -1,4 +1,4 @@
-from model.genome import (NodeGene as Node, ConnectionGene as Connection, Genome)
+from model.genome import (NodeGene as Node, ConnectionGene as Connection, Genome, InnovationDatabase)
 from model.input_data import InputData
 from model.model_constants import (INPUT_NODE, OUTPUT_NODE, HIDDEN_NODE)
 from model.common_genome_data import *
@@ -8,25 +8,27 @@ from model.activation_functions import *
 
 class Model:
     # construct a model/network (phenotype) from the genome
-    def __init__(self, genome:Genome):
+    def __init__(self, genome:Genome, previous_network_fitness:int):
         self.genome = genome
         self.phenotype = Model.topological_sort(self.genome.nodes, self.genome.connections)
+        self.fitness = previous_network_fitness
         
     # construct the model/network 
     # max possible starting connections should be low
     @classmethod
-    def generate_network(self, input_size=int, output_size=int, common_rates=CommonRates):
+    def generate_network(self, input_size=int, output_size=int, common_rates=CommonRates, innovation_db=InnovationDatabase):
+        self.fitness = 0
         input_neurons = []
         output_neurons = []
         connections = []
         id_count = 0
         for i in range(0, input_size):
-            node = Node(id_count, INPUT_NODE, 0, Sigmoid())
+            node = Node(id_count, INPUT_NODE, Sigmoid())
             input_neurons.append(node)
             id_count += 1
         
         for i in range(0, output_size):
-            node = Node(id_count, OUTPUT_NODE, 0, Sigmoid())
+            node = Node(id_count, OUTPUT_NODE, Sigmoid())
             output_neurons.append(node)
             id_count += 1
         
@@ -42,8 +44,8 @@ class Model:
                 connection = Connection(in_node, out_node, weight=random.random(), innovation_number=0)
                 connections.append(connection)
         
-        genome = Genome(nodes=input_neurons + output_neurons, connections=connections)
-        return Model(genome=genome)
+        genome = Genome(nodes=input_neurons + output_neurons, connections=connections, input_nodes_count=input_size, output_nodes_count=output_size, innovation_db=innovation_db)
+        return Model(genome=genome, previous_network_fitness=0)
     
     def feed_forward(self, input:dict):
         # 1. set inputs to input neurons
