@@ -176,6 +176,7 @@ class TetrisGameWithAI:
         
         # Check if any lines need to be cleared
         lines_cleared = self.board.update_clear_animation()
+        self.ai_controller.get_game_data(self)
         if lines_cleared > 0:
             # Update score
             self.score += POINTS_PER_LINE[lines_cleared] * self.level
@@ -186,6 +187,13 @@ class TetrisGameWithAI:
             if new_level > self.level:
                 self.level = new_level
                 self.fall_speed *= LEVEL_SPEEDUP
+        
+        #if random.random() < self.ai_controller.model.genome.common_rates.node_addition_mutation_rate:
+        #    self.ai_controller.model.genome.mutation_add_node() # test
+        #    self.ai_controller.model.phenotype = Model.topological_sort(self.ai_controller.model.genome.nodes, self.ai_controller.model.genome.connections)
+        #    
+        #if random.random() < self.ai_controller.model.genome.common_rates.connection_addition_mutation_rate:
+        #    self.ai_controller.model.genome.mutation_add_connection() # test
                 
         # Process AI move
         ai_move = self.ai_controller.get_next_move()
@@ -202,9 +210,6 @@ class TetrisGameWithAI:
             if not self.move_tetromino(0, 1):
                 # If the tetromino can't move down, lock it in place
                 self.lock_tetromino()
-                #if random.random() > 0.5:
-                    #self.ai_controller.model.genome.mutation_add_node() # test
-                    #misc.visualizers.visualize_phenotype(self.ai_controller.model.genome, title="Phenotype Visualization")
             
             # Add points for soft drop
             if self.soft_drop:
@@ -220,16 +225,22 @@ class TetrisGameWithAI:
             move (int): The move to make (0 : left, 1 : right, 2 : rotate, 3 : soft_drop, 4 : hard_drop, 5 no_move)
         """
         if move == Movement.MOVE_LEFT:
+            print('Moving left.')
             self.move_tetromino(-1, 0)
         elif move == Movement.MOVE_RIGHT:
+            print('Moving right.')
             self.move_tetromino(1, 0)
         elif move == Movement.ROTATE:
+            print('Rotating.')
             self.rotate_tetromino()
         elif move == Movement.SOFT_DROP:
+            print('Soft drop done.')
             self.soft_drop = True
         elif move == Movement.HARD_DROP:
+            print('Hard drop d(-__-)b.')
             self.hard_drop()
         elif move == Movement.NO_MOVE:
+            print('Doing nothing.')
             return
         # Reset soft drop after processing
         if move != Movement.SOFT_DROP:
@@ -313,8 +324,7 @@ class TetrisGameWithAI:
             "↑ : Rotate",
             "↓ : Soft Drop",
             "Space : Hard Drop",
-            "P : Pause",
-            "A : Toggle AI"
+            "P : Pause"
         ]
         
         for i, text in enumerate(controls):

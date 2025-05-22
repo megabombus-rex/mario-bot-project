@@ -6,6 +6,12 @@ import random
 from collections import defaultdict, deque
 from model.activation_functions import *
 
+node_names = {
+    INPUT_NODE : "INPUT",
+    OUTPUT_NODE : "OUTPUT",
+    HIDDEN_NODE : "HIDDEN"
+}
+
 class Model:
     # construct a model/network (phenotype) from the genome
     def __init__(self, genome:Genome, previous_network_fitness:int):
@@ -44,7 +50,7 @@ class Model:
                 connection = Connection(in_node, out_node, weight=random.random(), innovation_number=0)
                 connections.append(connection)
         
-        genome = Genome(nodes=input_neurons + output_neurons, connections=connections, input_nodes_count=input_size, output_nodes_count=output_size, innovation_db=innovation_db)
+        genome = Genome(nodes=input_neurons + output_neurons, connections=connections, input_nodes_count=input_size, output_nodes_count=output_size, innovation_db=innovation_db, common_rates=common_rates)
         return Model(genome=genome, previous_network_fitness=0)
     
     def feed_forward(self, input:dict):
@@ -84,15 +90,21 @@ class Model:
                     if not conn.is_disabled:
                         input_val = conn.in_node.output
                         node.input_sum += input_val * conn.weight
+                        #print(f'Added input_val: {input_val} with weight {conn.weight}')
                 node.output = node.activation_function(node.input_sum)
-                print(f'Node {node.id} is a node of type {node.type} and outputs value {node.output}.')
+                #print(f'Node {node.id} output is: {node.output}.')
+                #print(f'Node {node.id} input sum is: {node.input_sum}.')
+        #for node in self.phenotype:
+        #    if conn in node.inputs:
+        #        if not conn.is_disabled:
+        #            print(f'Node id: {node.id}, node type: {node_names[node.type]}, node output: {node.output}.')                
             
         # 4.
         outputs = {}
         for node in self.genome.nodes:
             if node.type == OUTPUT_NODE:
                 outputs[node.id] = node.output
-                print(f'Node {node.id} is an output node and outputs value {node.output}.')
+                #print(f'Node {node.id} is an output node and outputs value {node.output}.')
         
         return outputs
         
@@ -131,6 +143,6 @@ class Model:
     
     # forward the data
     def __call__(self, input=InputData):
-        for connection in self.genome.connections:
-            print(f'There is a connection between node {connection.in_node.id} and node {connection.out_node.id} with weight {connection.weight}.')
+        #for connection in self.genome.connections:
+            #print(f'There is a connection between node {connection.in_node.id} and node {connection.out_node.id} with weight {connection.weight}.')
         return self.feed_forward(input.to_dict())

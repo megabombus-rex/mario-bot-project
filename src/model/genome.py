@@ -1,5 +1,6 @@
 from model.model_constants import (INPUT_NODE, OUTPUT_NODE, HIDDEN_NODE)
 from model.activation_functions import *
+from model.common_genome_data import *
 import random
 
 class Gene:
@@ -59,7 +60,7 @@ class InnovationDatabase:
 
 class Genome:
     # inputs -> outputs -> new_nodes
-    def __init__(self, nodes:list, connections:list, input_nodes_count:int, output_nodes_count:int, innovation_db:InnovationDatabase):
+    def __init__(self, nodes:list, connections:list, input_nodes_count:int, output_nodes_count:int, innovation_db:InnovationDatabase, common_rates:CommonRates):
         self.nodes = nodes
         self.connections = connections
         self.node_count = len(self.nodes)
@@ -68,6 +69,8 @@ class Genome:
         self.input_nodes_count = input_nodes_count
         self.output_nodes_count = output_nodes_count
         self.innovation_db = innovation_db
+        self.common_rates = common_rates
+        innovation_db.node_count = len(nodes) 
         
         self.node_map = {node.id: node for node in self.nodes}
         for node in self.nodes:
@@ -105,12 +108,14 @@ class Genome:
             connection_2 = ConnectionGene(node, disabled_connection.out_node, random.random(), inn + 1)
             new_connections.append(connection_1)
             new_connections.append(connection_2)
+            print(f"Selected node {disabled_connection.in_node.id} as input, {disabled_connection.out_node.id} as output, current node is {node.id}.")
         else:
             # random node that is not an output node
             first_list = list(filter(lambda x: x.type is not OUTPUT_NODE, self.nodes))
-            second_list = list(filter(lambda x: x.type is not INPUT_NODE & x.id is not ran_node_1.id, self.nodes))
             ran_node_1 = random.choice(first_list)
+            second_list = list(filter(lambda x: x.type is not INPUT_NODE and x.id is not ran_node_1.id, self.nodes))
             ran_node_2 = random.choice(second_list)
+            print(f"Selected node {ran_node_1.id} as input, {ran_node_2.id} as output, current node is {node.id}.")
             connection_1 = ConnectionGene(ran_node_1, node, random.random(), inn)
             connection_2 = ConnectionGene(node, ran_node_2, random.random(), inn + 1)
             new_connections.append(connection_1)
@@ -149,7 +154,7 @@ class Genome:
         second_choice = random.choice(second_nodes)
         
         # if successful      
-        connection = ConnectionGene(first_choice, second_choice, random(), innovation_nr)
+        connection = ConnectionGene(first_choice, second_choice, random.random(), innovation_nr)
         self.connections.append(connection)
         self.connection_count += 1
         self.size += 1

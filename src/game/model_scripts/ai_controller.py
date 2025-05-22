@@ -25,4 +25,6 @@ class AIController:
         outputs = self.model(self.input)
         probabilities = self.probability_function(outputs)
         chosen_index = random.choices(range(len(probabilities)), weights=probabilities, k=1)[0]
+        #print('probabilities:' + '-'.join(map(str, probabilities)))
+        #print(f'Chosen index: {chosen_index}')
         return Movement(chosen_index)
