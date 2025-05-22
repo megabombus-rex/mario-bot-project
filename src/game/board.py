@@ -50,8 +50,8 @@ class Board:
         positions = tetromino.get_positions()
         
         # Check if any positions are above the visible grid (game over)
-        for _, y in positions:
-            if y < 0:
+        for x, y in positions:
+            if y < 0 or self.grid[y][x]:
                 return False  # Game over
         
         # Add each block to the grid
