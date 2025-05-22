@@ -1,4 +1,3 @@
-from collections import defaultdict
 
 class InputData:
     def __init__(self, x_block:int, y_block:int, block_type:int, block_fall_speed:int, block_rotation:int, next_block_type:int):
@@ -10,11 +9,12 @@ class InputData:
         self.next_block_type = next_block_type
         
     def to_dict(self):
-        dict = defaultdict(int)
-        dict[0] = self.x_block
-        dict[1] = self.y_block
-        dict[2] = self.block_type
-        dict[3] = self.block_fall_speed
-        dict[4] = self.block_rotation
-        dict[5] = self.next_block_type
+        dict = {
+        0 : self.x_block,
+        1 : self.y_block,
+        2 : self.block_type,
+        3 : self.block_fall_speed,
+        4 : self.block_rotation,
+        5 : self.next_block_type,
+        }
         return dict

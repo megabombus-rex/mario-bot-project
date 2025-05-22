@@ -9,30 +9,31 @@ def visualize_phenotype(genome, title="Phenotype Visualization"):
     node_colors = []
     labels = {}
     pos = {}
+    
+    type_map = {
+    0: ("INPUT", "skyblue"),
+    1: ("HIDDEN", "lightgray"),
+    2: ("OUTPUT", "salmon")
+    }
 
     # Assign x positions by layer/type for clean layout
-    layer_map = {INPUT_NODE: 0, OUTPUT_NODE: 1, HIDDEN_NODE: 2}
 
     for node in genome.nodes:
         node_id = node.id
         node_type = getattr(node, 'type', 1)
 
-        # Add node to graph
-        G.add_node(node_id)
-        labels[node_id] = f"{layer_map[node_type]}{node_id}"
+        node_label, node_color = type_map.get(node_type, ("HIDDEN", "gray"))
 
-        # Color by node type
-        if node_type == INPUT_NODE:
-            node_colors.append('skyblue')
-        elif node_type == OUTPUT_NODE:
-            node_colors.append('salmon')
-        else:
-            node_colors.append('lightgray')
+        if node_id not in G:
+            G.add_node(node_id)
 
-        # Simple horizontal layer-based positioning
-        x = layer_map.get(node_type, 1)
-        y = -node_id  # stack vertically
-        pos[node_id] = (x, y)
+            node_colors.append(node_color)
+            labels[node_id] = f"{node_label[0]}{node_id}"
+
+            # Basic layout: INPUT (x=0), HIDDEN (x=1), OUTPUT (x=2)
+            x = node_type
+            y = -node_id  # Simple vertical stacking
+            pos[node_id] = (x, y)
 
     # Add connections
     for conn in genome.connections:
