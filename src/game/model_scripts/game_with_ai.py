@@ -25,6 +25,7 @@ class TetrisGameWithAI:
         """
         # Set the random seed if provided
         if seed is not None:
+            self.seed = seed
             random.seed(seed)
             
         # Create the game board
@@ -67,7 +68,20 @@ class TetrisGameWithAI:
         """
         if self.game_over:
             if key == pygame.K_r:
-                self.__init__()  # Reset the game
+                # for the time being, here we can mutate the model
+                if random.random() < self.ai_controller.model.genome.common_rates.node_addition_mutation_rate:
+                    self.ai_controller.model.genome.mutation_add_node() # test
+                    self.ai_controller.model.phenotype = Model.topological_sort(self.ai_controller.model.genome.nodes, self.ai_controller.model.genome.connections)
+                    print('Node added to the genome')
+                    
+                if random.random() < self.ai_controller.model.genome.common_rates.connection_addition_mutation_rate:
+                    self.ai_controller.model.genome.mutation_add_connection() # test
+                    self.ai_controller.model.phenotype = Model.topological_sort(self.ai_controller.model.genome.nodes, self.ai_controller.model.genome.connections)
+                    print('Connection added to the genome')
+                
+                self.ai_controller.model = Model(genome=self.ai_controller.model.genome, previous_network_fitness=self.score)
+                misc.visualizers.visualize_phenotype(self.ai_controller.model.genome, title="Phenotype Visualization")
+                self.__init__(self.seed, self.ai_controller.model)  # Reset the game
             return
             
         if key == pygame.K_p:

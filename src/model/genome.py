@@ -52,9 +52,11 @@ class InnovationDatabase:
     def increment_node_count(self):
         self.node_count += 1
 
+    # maybe try add connections, for possible conflicts
     def add_connection_to_connection_genes(self, gene:ConnectionGene):
         self.connections.add(gene)        
 
+    # maybe try add nodes, for possible conflicts
     def add_node_to_node_genes(self, gene:NodeGene):
         self.nodes.add(gene)        
 
@@ -124,6 +126,9 @@ class Genome:
         
         # if successful
         self.nodes.append(node)
+        self.innovation_db.add_node_to_node_genes(node)
+        self.innovation_db.add_connection_to_connection_genes(new_connections[0])
+        self.innovation_db.add_connection_to_connection_genes(new_connections[1])
         self.connections += new_connections
         self.node_count += 1
         self.size += 1
@@ -153,12 +158,27 @@ class Genome:
         
         second_choice = random.choice(second_nodes)
         
-        # if successful      
+        # if successful
         connection = ConnectionGene(first_choice, second_choice, random.random(), innovation_nr)
         self.connections.append(connection)
+        self.innovation_db.add_connection_to_connection_genes(connection)
         self.connection_count += 1
         self.size += 1
         self.innovation_db.increment_innovation_count()
+        
+    def mutation_change_random_weight(self):
+        connection = random.choice(self.connections)
+        connection.weight = random.random()
+        
+    def mutation_change_activation_function(self):
+        node = random.choice(self.nodes)
+        new_activation_function = random.choice(ReLU(), Sigmoid()) 
+        node.activation_function = new_activation_function
+        
+    def mutation_change_connection(self):
+        connection = random.choice(self.connections)
+        connection.is_disabled = not connection.is_disabled
+        
         
     def __str__(self):
         node_strs = [str(node) for node in self.nodes]
