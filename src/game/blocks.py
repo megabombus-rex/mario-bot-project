@@ -1,5 +1,5 @@
-import random
 from game.constants import COLORS
+import numpy as np
 
 # Tetromino shapes defined as offsets from their center
 # Each shape is defined in its default orientation (spawn orientation)
@@ -24,7 +24,7 @@ TETROMINOES_INDEXES = {
 }
 
 class Tetromino:
-    def __init__(self, shape=None, x=None, y=None, seed=None):
+    def __init__(self, shape=None, x=None, y=None, rng=None):
         """
         Initialize a tetromino.
         
@@ -34,11 +34,10 @@ class Tetromino:
             y (int, optional): Initial y position. Defaults to top if None.
             seed (int, optional): Seed for random shape generation.
         """
-        if seed is not None:
-            random.seed(seed)
+        self.rng = rng
         
         # Choose a random shape if not specified
-        self.shape = shape if shape else random.choice(list(TETROMINOES.keys()))
+        self.shape = shape if shape else self.rng.choice(list(TETROMINOES.keys()))
         self.color = COLORS[self.shape]
         
         # Set initial position (default is center top of the grid)
@@ -117,6 +116,6 @@ class Tetromino:
         return f"Tetromino({self.shape} at ({self.x}, {self.y}), rotation: {self.rotation})"
 
 
-def get_random_tetromino(x=None, y=None, seed=None):
+def get_random_tetromino(x=None, y=None, rng=None):
     """Convenience function to get a random tetromino."""
-    return Tetromino(x=x, y=y, seed=seed)
+    return Tetromino(x=x, y=y, rng=rng)

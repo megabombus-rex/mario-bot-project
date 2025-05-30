@@ -2,7 +2,7 @@ from model.genome import (NodeGene as Node, ConnectionGene as Connection, Genome
 from model.input_data import InputData
 from model.model_constants import (INPUT_NODE, OUTPUT_NODE, HIDDEN_NODE)
 from model.common_genome_data import *
-import random
+import numpy as np
 from collections import defaultdict, deque
 from model.activation_functions import *
 
@@ -22,12 +22,19 @@ class Model:
     # construct the model/network 
     # max possible starting connections should be low
     @classmethod
-    def generate_network(self, input_size=int, output_size=int, common_rates=CommonRates, innovation_db=InnovationDatabase):
+    def generate_network(self, input_size:int, output_size:int, common_rates:CommonRates, innovation_db:InnovationDatabase, seed=None):
         self.fitness = 0
         input_neurons = []
         output_neurons = []
         connections = []
         id_count = 0
+        
+        rng = None
+        if seed is None:
+            rng = np.random.default_rng()
+        else:
+            rng = np.random.default_rng(seed)
+        
         for i in range(0, input_size):
             node = Node(id_count, INPUT_NODE, Sigmoid())
             input_neurons.append(node)
@@ -39,18 +46,18 @@ class Model:
             id_count += 1
         
         for _ in range(common_rates.max_start_connection_count):
-            if random.uniform(0, 1) > common_rates.start_connection_probability:
-                in_node = random.choice(input_neurons)
-                out_node = random.choice(output_neurons)
+            if rng.uniform(0, 1) > common_rates.start_connection_probability:
+                in_node = rng.choice(input_neurons)
+                out_node = rng.choice(output_neurons)
 
                 # Check if this exact connection already exists
                 if any(conn.in_node.id == in_node.id and conn.out_node.id == out_node.id for conn in connections):
                     continue
 
-                connection = Connection(in_node, out_node, weight=random.random(), innovation_number=0)
+                connection = Connection(in_node, out_node, weight=rng.random(), innovation_number=0)
                 connections.append(connection)
         
-        genome = Genome(nodes=input_neurons + output_neurons, connections=connections, input_nodes_count=input_size, output_nodes_count=output_size, innovation_db=innovation_db, common_rates=common_rates)
+        genome = Genome(nodes=input_neurons + output_neurons, connections=connections, input_nodes_count=input_size, output_nodes_count=output_size, innovation_db=innovation_db, common_rates=common_rates, rng=rng)
         return Model(genome=genome, previous_network_fitness=0)
     
     def feed_forward(self, input:dict):
