@@ -3,7 +3,7 @@ import model.input_data as input
 from game.blocks import TETROMINOES_INDEXES
 from game.constants import Movement
 from misc.probability_functions import *
-import random
+import numpy as np
 # when testing, two modes should be created, for showing and for headless running
 
 class AIController:
@@ -24,7 +24,7 @@ class AIController:
     def get_next_move(self):
         outputs = self.model(self.input)
         probabilities = self.probability_function(outputs)
-        chosen_index = random.choices(range(len(probabilities)), weights=probabilities, k=1)[0]
+        chosen_index = self.model.genome.rng.choice(range(len(probabilities)), replace=False, p=probabilities)
         #print('probabilities:' + '-'.join(map(str, probabilities)))
         #print(f'Chosen index: {chosen_index}')
         return Movement(chosen_index)

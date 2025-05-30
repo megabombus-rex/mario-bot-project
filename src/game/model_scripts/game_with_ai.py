@@ -1,6 +1,5 @@
 import pygame
 import time
-import random
 from game.blocks import get_random_tetromino
 from game.board import Board
 from game.model_scripts.ai_controller import AIController
@@ -13,6 +12,7 @@ from game.constants import (
 from model.model import *
 from misc.probability_functions import *
 import misc.visualizers
+import numpy as np
 
 class TetrisGameWithAI:
     def __init__(self, seed=DEFAULT_SEED, ai_model=None):
@@ -26,7 +26,10 @@ class TetrisGameWithAI:
         # Set the random seed if provided
         if seed is not None:
             self.seed = seed
-            random.seed(seed)
+            self.rng = np.random.default_rng(seed)
+        else:
+            self.seed = np.random.default_rng().integers(0, 1000, size=1)
+            self.rng = np.random.default_rng(self.seed)
             
         # Create the game board
         self.board = Board()
@@ -43,8 +46,8 @@ class TetrisGameWithAI:
         #self.ai_mode = False  # Start with human control
         
         # Create the first tetromino
-        self.current_tetromino = get_random_tetromino(x=5, y=0)
-        self.next_tetromino = get_random_tetromino(x=5, y=0)
+        self.current_tetromino = get_random_tetromino(x=5, y=0, rng=self.rng)
+        self.next_tetromino = get_random_tetromino(x=5, y=0, rng=self.rng)
         
         # Initialize timing
         self.last_fall_time = time.time()
@@ -69,12 +72,12 @@ class TetrisGameWithAI:
         if self.game_over:
             if key == pygame.K_r:
                 # for the time being, here we can mutate the model
-                if random.random() < self.ai_controller.model.genome.common_rates.node_addition_mutation_rate:
+                if self.ai_controller.model.genome.rng.random() < self.ai_controller.model.genome.common_rates.node_addition_mutation_rate:
                     self.ai_controller.model.genome.mutation_add_node() # test
                     self.ai_controller.model.phenotype = Model.topological_sort(self.ai_controller.model.genome.nodes, self.ai_controller.model.genome.connections)
                     print('Node added to the genome')
                     
-                if random.random() < self.ai_controller.model.genome.common_rates.connection_addition_mutation_rate:
+                if self.ai_controller.model.genome.rng.random() < self.ai_controller.model.genome.common_rates.connection_addition_mutation_rate:
                     self.ai_controller.model.genome.mutation_add_connection() # test
                     self.ai_controller.model.phenotype = Model.topological_sort(self.ai_controller.model.genome.nodes, self.ai_controller.model.genome.connections)
                     print('Connection added to the genome')
@@ -173,7 +176,7 @@ class TetrisGameWithAI:
             
         # Create the next tetromino
         self.current_tetromino = self.next_tetromino
-        self.next_tetromino = get_random_tetromino(x=5, y=0)
+        self.next_tetromino = get_random_tetromino(x=5, y=0, rng=self.rng)
         
         # Reset soft drop
         self.soft_drop = False
