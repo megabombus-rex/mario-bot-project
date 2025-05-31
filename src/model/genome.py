@@ -1,3 +1,4 @@
+import random
 from model.model_constants import (INPUT_NODE, OUTPUT_NODE, HIDDEN_NODE)
 from model.activation_functions import *
 from model.common_genome_data import *
