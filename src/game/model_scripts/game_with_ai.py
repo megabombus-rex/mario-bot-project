@@ -205,13 +205,6 @@ class TetrisGameWithAI:
                 self.level = new_level
                 self.fall_speed *= LEVEL_SPEEDUP
         
-        #if random.random() < self.ai_controller.model.genome.common_rates.node_addition_mutation_rate:
-        #    self.ai_controller.model.genome.mutation_add_node() # test
-        #    self.ai_controller.model.phenotype = Model.topological_sort(self.ai_controller.model.genome.nodes, self.ai_controller.model.genome.connections)
-        #    
-        #if random.random() < self.ai_controller.model.genome.common_rates.connection_addition_mutation_rate:
-        #    self.ai_controller.model.genome.mutation_add_connection() # test
-                
         # Process AI move
         ai_move = self.ai_controller.get_next_move()
         if ai_move:
