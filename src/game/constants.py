@@ -66,5 +66,6 @@ HARD_DROP_POINTS = 2  # Per cell dropped
 KEY_DELAY = 200
 KEY_INTERVAL = 100
 
-# Seed for randomization (if needed)
-DEFAULT_SEED = None  # Set to an integer for deterministic behavior
+# Seed for randomization (if needed), those seeds should be different
+DEFAULT_SEED = None
+DEFAULT_SEED_MODEL = 12345
