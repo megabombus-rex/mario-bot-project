@@ -54,7 +54,9 @@ class Model:
                 if any(conn.in_node.id == in_node.id and conn.out_node.id == out_node.id for conn in connections):
                     continue
 
-                connection = Connection(in_node, out_node, weight=rng.random(), innovation_number=0)
+                innov = innovation_db.get_or_create_connection_innovation(in_node_id=in_node.id, out_node_id=out_node.id)
+
+                connection = Connection(in_node, out_node, weight=rng.random(), innovation_number=innov)
                 connections.append(connection)
         
         genome = Genome(nodes=input_neurons + output_neurons, connections=connections, input_nodes_count=input_size, output_nodes_count=output_size, innovation_db=innovation_db, common_rates=common_rates, rng=rng)
