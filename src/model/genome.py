@@ -33,46 +33,42 @@ class ConnectionGene(Gene):
         return f'start_node_id: {self.in_node.id}, end_node_id: {self.out_node.id}, weight: {self.weight}'
         
 class InnovationDatabase:
-    def __init__(self):
-        self.connections = []
-        self.nodes = []
-        self.innovation_count = 0
-        self.node_count = 0
-        self.connection_history = {}  # (from_id, to_id): innovation_number
+    def __init__(self, start_node_count=0, start_innov_count=0):
+        self.connection_history = {}  # (in_node_id, out_node_id): innovation_number
+        self.node_history = {}        # (split_connection_innov): node_id
+        self.innovation_count = start_innov_count
+        self.node_count = start_node_count
         
-    def get_next_innovation_count(self):
-        return self.innovation_count + 1
+    def get_or_create_connection_innovation(self, in_node_id, out_node_id):
+        key = (in_node_id, out_node_id)
+        if key in self.connection_history:
+            return self.connection_history[key]
+        else:
+            self.innovation_count += 1
+            self.connection_history[key] = self.innovation_count
+            return self.innovation_count
         
-    def increment_innovation_count(self):
-        self.innovation_count += 1
-
+    def get_or_create_node_id(self, split_connection_innov):
+        if split_connection_innov in self.node_history:
+            return self.node_history[split_connection_innov]
+        else:
+            self.node_count += 1
+            self.node_history[split_connection_innov] = self.node_count
+            return self.node_count
+        
     def get_next_node_id(self):
-        return self.node_count + 1
-        
-    def increment_node_count(self):
         self.node_count += 1
-
-    # maybe try add connections, for possible conflicts
-    def add_connection_to_connection_genes(self, gene:ConnectionGene):
-        self.connections.append(gene)        
-
-    # maybe try add nodes, for possible conflicts
-    def add_node_to_node_genes(self, gene:NodeGene):
-        self.nodes.append(gene)  
+        return self.node_count
 
 class Genome:
     # inputs -> outputs -> new_nodes
     def __init__(self, nodes:list, connections:list, input_nodes_count:int, output_nodes_count:int, innovation_db:InnovationDatabase, common_rates:CommonRates, rng:np.random):
         self.nodes = nodes
         self.connections = connections
-        self.node_count = len(self.nodes)
-        self.connection_count = len(self.connections)
-        self.size = self.node_count + self.connection_count
         self.input_nodes_count = input_nodes_count
         self.output_nodes_count = output_nodes_count
         self.innovation_db = innovation_db
         self.common_rates = common_rates
-        innovation_db.node_count = len(nodes) 
         self.rng = rng
         
         self.node_map = {node.id: node for node in self.nodes}
@@ -91,59 +87,57 @@ class Genome:
     # end the genome. The new node is between the two new connections. A new node gene
     # representing this new node is added to the genome as well.
     def mutation_add_node(self):
-        node_id = self.innovation_db.get_next_node_id()
         
-        activation_function = self.rng.choice([ReLU(), Sigmoid()])
-        node = NodeGene(node_id, HIDDEN_NODE, activation_function)
-        
+        # placeholders
         disabled_connection = None
+        node_id = 0
         
+        # put it in between connections
         if self.connections: 
             disabled_connection = self.rng.choice(self.connections)
             disabled_connection.is_disabled = True
         
+        if disabled_connection is not None:
+            node_id = self.innovation_db.get_or_create_node_id(disabled_connection.innovation_number)
+            print(f'Current node count: {self.innovation_db.node_count}')
+        else:
+            node_id = self.innovation_db.get_next_node_id()
+            print(f'Current node count: {self.innovation_db.node_count}')
+            
+        activation_function = self.rng.choice([ReLU(), Sigmoid()])
+        node = NodeGene(node_id, HIDDEN_NODE, activation_function)
         new_connections = []
         
-        inn = self.innovation_db.get_next_innovation_count()
-        
         if disabled_connection is not None:
-            connection_1 = ConnectionGene(disabled_connection.in_node, node, self.rng.random(), inn)
-            connection_2 = ConnectionGene(node, disabled_connection.out_node, self.rng.random(), inn + 1)
+            innov_1 = self.innovation_db.get_or_create_connection_innovation(disabled_connection.in_node.id, node.id)
+            innov_2 = self.innovation_db.get_or_create_connection_innovation(node.id, disabled_connection.out_node.id)
+            connection_1 = ConnectionGene(disabled_connection.in_node, node, self.rng.random(), innov_1)
+            connection_2 = ConnectionGene(node, disabled_connection.out_node, self.rng.random(), innov_2)
             new_connections.append(connection_1)
             new_connections.append(connection_2)
             print(f"Selected node {disabled_connection.in_node.id} as input, {disabled_connection.out_node.id} as output, current node is {node.id}.")
         else:
             # random node that is not an output node
-            first_list = list(filter(lambda x: x.type is not OUTPUT_NODE, self.nodes))
-            ran_node_1 = self.rng.choice(first_list)
-            second_list = list(filter(lambda x: x.type is not INPUT_NODE and x.id is not ran_node_1.id, self.nodes))
-            ran_node_2 = self.rng.choice(second_list)
+            ran_node_1 = self.rng.choice(list(filter(lambda x: x.type is not OUTPUT_NODE, self.nodes)))
+            ran_node_2 = self.rng.choice(list(filter(lambda x: x.type is not INPUT_NODE and x.id is not ran_node_1.id, self.nodes)))
+            
             print(f"Selected node {ran_node_1.id} as input, {ran_node_2.id} as output, current node is {node.id}.")
-            connection_1 = ConnectionGene(ran_node_1, node, self.rng.random(), inn)
-            connection_2 = ConnectionGene(node, ran_node_2, self.rng.random(), inn + 1)
+            innov_1 = self.innovation_db.get_or_create_connection_innovation(ran_node_1.id, node.id)
+            innov_2 = self.innovation_db.get_or_create_connection_innovation(node.id, ran_node_2.id)
+            connection_1 = ConnectionGene(ran_node_1, node, self.rng.random(), innov_1)
+            connection_2 = ConnectionGene(node, ran_node_2, self.rng.random(), innov_2)
             new_connections.append(connection_1)
             new_connections.append(connection_2)
-
         
-        # if successful
         self.nodes.append(node)
-        self.innovation_db.add_node_to_node_genes(node)
-        self.innovation_db.add_connection_to_connection_genes(new_connections[0])
-        self.innovation_db.add_connection_to_connection_genes(new_connections[1])
         self.connections += new_connections
-        self.node_count += 1
-        self.size += 1
-        self.innovation_db.increment_innovation_count()
-        self.innovation_db.increment_innovation_count()
-        self.innovation_db.increment_node_count()
         print(f'Added node in between nodes {new_connections[0].in_node.id} and {new_connections[1].out_node.id}.')
         
     # taken from the NEAT paper
     # In adding a connection, a single new connection gene is added to the end of the
     # genome and given the next available innovation number.    
     def mutation_add_connection(self):
-        innovation_nr = self.innovation_db.get_next_innovation_count()
-        max_connections = self.node_count - self.output_nodes_count        
+        max_connections = len(self.nodes) - self.output_nodes_count        
         
         # choose only INPUT/HIDDEN nodes 
         first_nodes = list(filter(lambda x: x.type is not OUTPUT_NODE, self.nodes))
@@ -153,19 +147,18 @@ class Genome:
         first_choice = self.rng.choice(first_nodes)
         
         # choose only HIDDEN/OUTPUT nodes that did not exceed the total count of connections and are not the first_choice
-        second_nodes = list(filter(lambda x: x.type is not INPUT_NODE & len(x.inputs) < max_connections & x.id is not first_choice.id, self.nodes))
+        second_nodes = list(filter(lambda x: x.type is not INPUT_NODE and len(x.inputs) < max_connections and x.id != first_choice.id, self.nodes))
+        
+        print("targeted nodes:", [node.id for node in second_nodes])
         if len(second_nodes) < 1:
             return
         
         second_choice = self.rng.choice(second_nodes)
         
         # if successful
+        innovation_nr = self.innovation_db.get_or_create_connection_innovation(first_choice.id, second_choice.id)
         connection = ConnectionGene(first_choice, second_choice, self.rng.random(), innovation_nr)
         self.connections.append(connection)
-        self.innovation_db.add_connection_to_connection_genes(connection)
-        self.connection_count += 1
-        self.size += 1
-        self.innovation_db.increment_innovation_count()
         
     def mutation_change_random_weight(self):
         connection = self.rng.choice(self.connections)
