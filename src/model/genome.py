@@ -63,13 +63,12 @@ class InnovationDatabase:
 
 class Genome:
     # inputs -> outputs -> new_nodes
-    def __init__(self, nodes:list, connections:list, input_nodes_count:int, output_nodes_count:int, innovation_db:InnovationDatabase, common_rates:CommonRates, rng:np.random):
+    def __init__(self, nodes:list, connections:list, input_nodes_count:int, output_nodes_count:int, innovation_db:InnovationDatabase, rng:np.random):
         self.nodes = nodes
         self.connections = connections
         self.input_nodes_count = input_nodes_count
         self.output_nodes_count = output_nodes_count
         self.innovation_db = innovation_db
-        self.common_rates = common_rates
         self.rng = rng
         
         self.node_map = {node.id: node for node in self.nodes}
@@ -148,10 +147,8 @@ class Genome:
         
         if disabled_connection is not None:
             node_id = self.innovation_db.get_or_create_node_id(disabled_connection.innovation_number)
-            print(f'Current node count: {self.innovation_db.node_count}')
         else:
             node_id = self.innovation_db.get_next_node_id()
-            print(f'Current node count: {self.innovation_db.node_count}')
             
         activation_function = self.rng.choice([ReLU(), Sigmoid()])
         node = NodeGene(node_id, HIDDEN_NODE, activation_function)
@@ -164,13 +161,11 @@ class Genome:
             connection_2 = ConnectionGene(node, disabled_connection.out_node, self.rng.random(), innov_2)
             new_connections.append(connection_1)
             new_connections.append(connection_2)
-            print(f"Selected node {disabled_connection.in_node.id} as input, {disabled_connection.out_node.id} as output, current node is {node.id}.")
         else:
             # random node that is not an output node
             ran_node_1 = self.rng.choice(list(filter(lambda x: x.type is not OUTPUT_NODE, self.nodes)))
             ran_node_2 = self.rng.choice(list(filter(lambda x: x.type is not INPUT_NODE and x.id is not ran_node_1.id, self.nodes)))
             
-            print(f"Selected node {ran_node_1.id} as input, {ran_node_2.id} as output, current node is {node.id}.")
             innov_1 = self.innovation_db.get_or_create_connection_innovation(ran_node_1.id, node.id)
             innov_2 = self.innovation_db.get_or_create_connection_innovation(node.id, ran_node_2.id)
             connection_1 = ConnectionGene(ran_node_1, node, self.rng.random(), innov_1)
@@ -215,7 +210,7 @@ class Genome:
         
     def mutation_change_activation_function(self):
         node = self.rng.choice(self.nodes)
-        new_activation_function = self.rng.choice(ReLU(), Sigmoid()) 
+        new_activation_function = self.rng.choice([ReLU(), Sigmoid()]) 
         node.activation_function = new_activation_function
         
     def mutation_change_connection(self):
