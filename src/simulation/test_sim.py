@@ -69,12 +69,28 @@ class Experiment:
                 if (specimen.fitness > best_specimen.fitness):
                     best_specimen = specimen
                     
-            # crossover for each
-        
-            # while crossover is not implemented, just copy/re-reference the previous
-            for i in range(corrected_size):
-                next_population[i] = population[i]
-        
+            # sort population by fitness (descending order)
+            sorted_population = sorted(population, key=lambda x: x.fitness, reverse=True)
+
+            # elitism
+            next_population[0] = sorted_population[0]
+
+            # crossover
+            for i in range(1, corrected_size):
+                parent1 = self.rng.choice(sorted_population[:max(2, corrected_size // 2)])
+                parent2 = self.rng.choice(sorted_population[:max(2, corrected_size // 2)])
+                while parent2 == parent1:
+                    parent2 = self.rng.choice(sorted_population[:max(2, corrected_size // 2)])
+
+                genome1 = parent1.model.genome
+                genome2 = parent2.model.genome
+                fitness1 = parent1.fitness
+                fitness2 = parent2.fitness
+
+                child_genome = genome1.crossover(genome2, fitness1, fitness2)
+                child_model = Model(genome=child_genome, previous_network_fitness=0)
+                next_population[i] = ExpSpecimen(child_model, 0)
+
             # mutation for each
             for specimen in next_population:
                 if self.rng.random() < self.common_rates.node_addition_mutation_rate:

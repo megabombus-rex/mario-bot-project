@@ -63,13 +63,14 @@ class InnovationDatabase:
 
 class Genome:
     # inputs -> outputs -> new_nodes
-    def __init__(self, nodes:list, connections:list, input_nodes_count:int, output_nodes_count:int, innovation_db:InnovationDatabase, rng:np.random):
+    def __init__(self, nodes:list, connections:list, input_nodes_count:int, output_nodes_count:int, innovation_db:InnovationDatabase, rng:np.random, common_rates:CommonRates):
         self.nodes = nodes
         self.connections = connections
         self.input_nodes_count = input_nodes_count
         self.output_nodes_count = output_nodes_count
         self.innovation_db = innovation_db
         self.rng = rng
+        self.common_rates = common_rates
         
         self.node_map = {node.id: node for node in self.nodes}
         for node in self.nodes:
@@ -100,7 +101,7 @@ class Genome:
             gene2 = conn_dict2.get(innovation)
 
             if gene1 and gene2:  # matching gene
-                chosen = random.choice([gene1, gene2])
+                chosen = self.rng.choice([gene1, gene2])
             elif gene1:  # disjoint or excess
                 chosen = gene1
             else:
@@ -125,6 +126,7 @@ class Genome:
             input_nodes_count=self.input_nodes_count,
             output_nodes_count=self.output_nodes_count,
             innovation_db=self.innovation_db,
+            rng=self.rng,
             common_rates=self.common_rates
         )
         return child
