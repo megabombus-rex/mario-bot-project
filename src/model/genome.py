@@ -1,4 +1,3 @@
-import random
 from model.model_constants import (INPUT_NODE, OUTPUT_NODE, HIDDEN_NODE)
 from model.activation_functions import *
 from model.common_genome_data import *
@@ -113,7 +112,7 @@ class Genome:
             new_conn = ConnectionGene(in_node, out_node, chosen.weight, chosen.innovation_number)
             
             if gene1 and gene2:
-                new_conn.is_disabled = (gene1.is_disabled or gene2.is_disabled) and random.random() < 0.75
+                new_conn.is_disabled = (gene1.is_disabled or gene2.is_disabled) and self.rng.random() < 0.75
             else:
                 new_conn.is_disabled = chosen.is_disabled
 
