@@ -49,7 +49,7 @@ def main(seed, ai_model):
         clock.tick(FPS)
 
 def experiment(common_rates:CommonRates):
-    exp = Experiment(iteration_count=10, population_size=20, common_rates=common_rates)
+    exp = Experiment(iteration_count=10, population_size=20, tournament_size=5, common_rates=common_rates)
     exp()
     
 

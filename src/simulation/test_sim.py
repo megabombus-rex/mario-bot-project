@@ -15,11 +15,23 @@ class ExpSpecimen:
         self.model = model
 
 class Experiment:
-    def __init__(self, iteration_count:int, population_size:int, common_rates:CommonRates):
+    def __init__(self, iteration_count:int, population_size:int, tournament_size:int, common_rates:CommonRates):
         self.iteration_count = iteration_count
         self.population_size = population_size
+        self.tournament_size = tournament_size
         self.common_rates = common_rates
         self.rng = np.random.default_rng()
+
+    def tournament_selection(self, population):
+        contenders = self.rng.choice(
+            population, 
+            size=self.tournament_size, 
+            replace=False
+        )
+        
+        # The winner is the one with the highest fitness
+        winner = max(contenders, key=lambda x: x.fitness)
+        return winner
         
     def __call__(self):
         # Initialize pygame
@@ -77,11 +89,10 @@ class Experiment:
 
             # tournament selection and crossover
             for i in range(1, corrected_size):
-                # this is a simple tournament selection, might be replaced with a more sophisticated selection method
-                parent1 = self.rng.choice(sorted_population[:max(2, corrected_size // 2)])
-                parent2 = self.rng.choice(sorted_population[:max(2, corrected_size // 2)])
+                parent1 = self.tournament_selection(sorted_population)
+                parent2 = self.tournament_selection(sorted_population)
                 while parent2 == parent1:
-                    parent2 = self.rng.choice(sorted_population[:max(2, corrected_size // 2)])
+                    parent2 = self.tournament_selection(sorted_population)
 
                 # crossover
                 if self.rng.random() < self.common_rates.crossover_rate:
