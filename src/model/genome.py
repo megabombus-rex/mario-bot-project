@@ -2,6 +2,7 @@ from model.model_constants import (INPUT_NODE, OUTPUT_NODE, HIDDEN_NODE)
 from model.activation_functions import *
 from model.common_genome_data import *
 import numpy as np
+import copy
 
 class Gene:
     def __init__(self):
@@ -80,6 +81,9 @@ class Genome:
                 end_node = self.node_map.get(connection.out_node.id)
                 if end_node:
                     end_node.inputs.append(connection)
+
+    def copy(self):
+        return copy.deepcopy(self)
 
     def crossover(self, other:'Genome', fitness_self:float, fitness_other:float) -> 'Genome':
         if fitness_self > fitness_other:

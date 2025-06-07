@@ -75,19 +75,29 @@ class Experiment:
             # elitism
             next_population[0] = sorted_population[0]
 
-            # crossover
+            # tournament selection and crossover
             for i in range(1, corrected_size):
+                # this is a simple tournament selection, might be replaced with a more sophisticated selection method
                 parent1 = self.rng.choice(sorted_population[:max(2, corrected_size // 2)])
                 parent2 = self.rng.choice(sorted_population[:max(2, corrected_size // 2)])
                 while parent2 == parent1:
                     parent2 = self.rng.choice(sorted_population[:max(2, corrected_size // 2)])
 
-                genome1 = parent1.model.genome
-                genome2 = parent2.model.genome
-                fitness1 = parent1.fitness
-                fitness2 = parent2.fitness
+                # crossover
+                if self.rng.random() < self.common_rates.crossover_rate:
+                    genome1 = parent1.model.genome
+                    genome2 = parent2.model.genome
+                    fitness1 = parent1.fitness
+                    fitness2 = parent2.fitness
 
-                child_genome = genome1.crossover(genome2, fitness1, fitness2)
+                    child_genome = genome1.crossover(genome2, fitness1, fitness2)
+                else:
+                    # if no crossover, just clone better parent
+                    if parent1.fitness >= parent2.fitness:
+                        child_genome = parent1.model.genome.copy()
+                    else:
+                        child_genome = parent2.model.genome.copy()
+
                 child_model = Model(genome=child_genome, previous_network_fitness=0)
                 next_population[i] = ExpSpecimen(child_model, 0)
 
