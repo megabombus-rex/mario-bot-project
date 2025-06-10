@@ -1,0 +1,2 @@
+timestamp,game_time,move_number,seed,move_type,tetromino_x,tetromino_y,tetromino_shape,tetromino_rotation,next_shape,fall_speed,score,level,lines_cleared,probabilities,chosen_probability
+2025-06-10 13:25:30.452,0.001,1,[32],NO_MOVE,5,0,L,0,O,1.000,0,1,0,0.0043;0.0116;0.0315;0.0858;0.2331;0.6337,0.6337

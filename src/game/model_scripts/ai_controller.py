@@ -25,6 +25,13 @@ class AIController:
         outputs = self.model(self.input)
         probabilities = self.probability_function(outputs)
         chosen_index = self.model.genome.rng.choice(range(len(probabilities)), replace=False, p=probabilities)
+        chosen_probability = probabilities[chosen_index] if chosen_index < len(probabilities) else 0.0
         #print('probabilities:' + '-'.join(map(str, probabilities)))
         #print(f'Chosen index: {chosen_index}')
-        return Movement(chosen_index)
+        
+        return {
+            'move': Movement(chosen_index),
+            'probabilities': probabilities,
+            'chosen_probability': chosen_probability,
+            'chosen_index': chosen_index
+        }

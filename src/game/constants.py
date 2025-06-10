@@ -1,7 +1,7 @@
 from enum import IntEnum
 
 # Game window settings
-SCREEN_WIDTH = 800
+SCREEN_WIDTH = 1200  
 SCREEN_HEIGHT = 700
 TITLE = "Team Tetris"
 FPS = 60
@@ -69,3 +69,13 @@ KEY_INTERVAL = 100
 # Seed for randomization (if needed), those seeds should be different
 DEFAULT_SEED = None
 DEFAULT_SEED_MODEL = 12345
+
+# NEAT Network Visualizer window positioning consts
+NEAT_VIZ_X = 50
+NEAT_VIZ_Y = 50
+NEAT_VIZ_WIDTH = 300
+NEAT_VIZ_HEIGHT = 400
+
+CSV_LOG_ENABLED = True
+CSV_LOG_FILENAME = "ai_moves.csv"
+CSV_LOG_DIRECTORY = "logs"
