@@ -113,7 +113,7 @@ class Experiment:
                 next_population[i] = ExpSpecimen(child_model, 0)
 
             # mutation for each
-            for specimen in next_population:
+            for specimen in next_population[1:]:
                 if self.rng.random() < self.common_rates.node_addition_mutation_rate:
                     specimen.model.genome.mutation_add_node()
                 if self.rng.random() < self.common_rates.connection_addition_mutation_rate:

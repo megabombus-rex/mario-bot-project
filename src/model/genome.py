@@ -86,12 +86,18 @@ class Genome:
         return copy.deepcopy(self)
 
     def crossover(self, other:'Genome', fitness_self:float, fitness_other:float) -> 'Genome':
-        if fitness_self > fitness_other:
+        if fitness_self >= fitness_other:
             parent1, parent2 = self, other
         else:
             parent1, parent2 = other, self
 
-        child_nodes = {n.id: NodeGene(n.id, n.type, n.activation_function) for n in parent1.nodes}
+        child_nodes_map = {}
+        for n in parent1.nodes:
+            child_nodes_map[n.id] = NodeGene(n.id, n.type, n.activation_function)
+        for n in parent2.nodes:
+            if n.id not in child_nodes_map:
+                child_nodes_map[n.id] = NodeGene(n.id, n.type, n.activation_function)
+
         child_connections = []
 
         conn_dict1 = {conn.innovation_number: conn for conn in parent1.connections}
@@ -103,28 +109,28 @@ class Genome:
             gene1 = conn_dict1.get(innovation)
             gene2 = conn_dict2.get(innovation)
 
-            if gene1 and gene2:  # matching gene
-                chosen = self.rng.choice([gene1, gene2])
-            elif gene1:  # disjoint or excess
-                chosen = gene1
-            else:
-                continue  # ignore disjoint/excess from less fit parent
-
-            # Create new connection gene with copied nodes
-            in_node = child_nodes[chosen.in_node.id]
-            out_node = child_nodes[chosen.out_node.id]
-            new_conn = ConnectionGene(in_node, out_node, chosen.weight, chosen.innovation_number)
+            chosen_gene = None
+            if gene1 and gene2:  # Matching gene
+                chosen_gene = self.rng.choice([gene1, gene2])
+            elif gene1:  # Disjoint or excess from the fitter parent
+                chosen_gene = gene1
+            elif gene2: # Disjoint or excess from the LESS fit parent
+                continue
+        
+            if chosen_gene:
+                in_node = child_nodes_map[chosen_gene.in_node.id]
+                out_node = child_nodes_map[chosen_gene.out_node.id]
+                new_conn = ConnectionGene(in_node, out_node, chosen_gene.weight, chosen_gene.innovation_number)
             
-            if gene1 and gene2:
-                new_conn.is_disabled = (gene1.is_disabled or gene2.is_disabled) and self.rng.random() < 0.75
-            else:
-                new_conn.is_disabled = chosen.is_disabled
+                if gene1 and gene2:
+                    new_conn.is_disabled = (gene1.is_disabled or gene2.is_disabled) and self.rng.random() < 0.75
+                else:
+                    new_conn.is_disabled = chosen_gene.is_disabled
 
-            child_connections.append(new_conn)
+                child_connections.append(new_conn)
 
-        # New genome
         child = Genome(
-            nodes=list(child_nodes.values()),
+            nodes=list(child_nodes_map.values()),
             connections=child_connections,
             input_nodes_count=self.input_nodes_count,
             output_nodes_count=self.output_nodes_count,
@@ -210,6 +216,8 @@ class Genome:
         self.connections.append(connection)
         
     def mutation_change_random_weight(self):
+        if not self.connections:
+            return
         connection = self.rng.choice(self.connections)
         connection.weight = self.rng.random()
         
