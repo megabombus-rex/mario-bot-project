@@ -1,16 +1,19 @@
 import pygame
 import time
-from game.blocks import get_random_tetromino
+from game.blocks import get_random_tetromino, TETROMINOES_INDEXES
 from game.board import Board
 from game.model_scripts.ai_controller import AIController
 from game.constants import (
     SCREEN_WIDTH, SCREEN_HEIGHT, GRID_HEIGHT, 
     INITIAL_FALL_SPEED, LEVEL_SPEEDUP, POINTS_PER_LINE,
     SOFT_DROP_POINTS, HARD_DROP_POINTS, DEFAULT_SEED,
-    WHITE, BLACK, Movement
+    WHITE, BLACK, Movement, NEAT_VIZ_X, NEAT_VIZ_Y, 
+    NEAT_VIZ_WIDTH, NEAT_VIZ_HEIGHT
 )
 from model.model import *
 from misc.probability_functions import *
+from misc.neat_visualizer import NEATVisualizer
+from misc.csv_logger import CSVLogger
 import misc.visualizers
 import numpy as np
 
@@ -45,6 +48,12 @@ class TetrisGameWithAI:
         self.ai_controller = AIController(model=ai_model, move_selection_probability_function=Softmax())
         #self.ai_mode = False  # Start with human control
         
+        # NEAT visualizer
+        self.neat_visualizer = NEATVisualizer(NEAT_VIZ_X, NEAT_VIZ_Y, NEAT_VIZ_WIDTH, NEAT_VIZ_HEIGHT)
+        
+        # CSV Logger for AI moves
+        self.csv_logger = CSVLogger(seed=self.seed)
+        
         # Create the first tetromino
         self.current_tetromino = get_random_tetromino(x=5, y=0, rng=self.rng)
         self.next_tetromino = get_random_tetromino(x=5, y=0, rng=self.rng)
@@ -71,6 +80,8 @@ class TetrisGameWithAI:
         """
         if self.game_over:
             if key == pygame.K_r:
+                self.csv_logger.reset()
+                
                 # for the time being, here we can mutate the model
                 if self.ai_controller.model.genome.rng.random() < self.ai_controller.model.genome.common_rates.node_addition_mutation_rate:
                     self.ai_controller.model.genome.mutation_add_node() # test
@@ -172,6 +183,7 @@ class TetrisGameWithAI:
         # Add the current tetromino to the board
         if not self.board.add_tetromino(self.current_tetromino):
             self.game_over = True
+            self.cleanup()
             return
             
         # Create the next tetromino
@@ -206,9 +218,9 @@ class TetrisGameWithAI:
                 self.fall_speed *= LEVEL_SPEEDUP
         
         # Process AI move
-        ai_move = self.ai_controller.get_next_move()
-        if ai_move:
-            self.process_ai_move(ai_move)
+        ai_move_data = self.ai_controller.get_next_move()
+        if ai_move_data:
+            self.process_ai_move(ai_move_data)
                 
         # Check if it's time for the tetromino to fall
         fall_time = self.fall_speed
@@ -227,13 +239,45 @@ class TetrisGameWithAI:
                 
             self.last_fall_time = current_time
             
-    def process_ai_move(self, move):
+    def process_ai_move(self, move_data):
         """
         Process a move from the AI controller.
         
         Args:
-            move (int): The move to make (0 : left, 1 : right, 2 : rotate, 3 : soft_drop, 4 : hard_drop, 5 no_move)
+            move_data (dict): Dictionary containing move and probability information
         """
+        move = move_data['move']
+        probabilities = move_data['probabilities']
+        chosen_probability = move_data['chosen_probability']
+        
+        current_tetromino = self.current_tetromino
+        next_tetromino = self.next_tetromino
+        
+        move_names = {
+            Movement.MOVE_LEFT: "MOVE_LEFT",
+            Movement.MOVE_RIGHT: "MOVE_RIGHT", 
+            Movement.ROTATE: "ROTATE",
+            Movement.SOFT_DROP: "SOFT_DROP",
+            Movement.HARD_DROP: "HARD_DROP",
+            Movement.NO_MOVE: "NO_MOVE"
+        }
+        
+        log_data = {
+            'move_type': move_names.get(move, "UNKNOWN"),
+            'tetromino_x': current_tetromino.x,
+            'tetromino_y': current_tetromino.y,
+            'tetromino_shape': current_tetromino.shape,
+            'tetromino_rotation': current_tetromino.rotation,
+            'next_shape': next_tetromino.shape,
+            'fall_speed': self.fall_speed,
+            'score': self.score,
+            'level': self.level,
+            'lines_cleared': self.lines_cleared,
+            'probabilities': probabilities,
+            'chosen_probability': chosen_probability
+        }
+        self.csv_logger.log_move(log_data)
+         
         if move == Movement.MOVE_LEFT:
             print('Moving left.')
             self.move_tetromino(-1, 0)
@@ -278,6 +322,10 @@ class TetrisGameWithAI:
         # Draw the score, level, and lines cleared
         self.draw_stats(screen)
         
+        # Draw NEAT vis
+        if self.ai_controller and self.ai_controller.model:
+            self.neat_visualizer.draw_network(screen, self.ai_controller.model)
+        
         # Draw game over or paused message if needed
         if self.game_over:
             self.draw_game_over(screen)
@@ -307,8 +355,8 @@ class TetrisGameWithAI:
             
     def draw_stats(self, screen):
         """Draw the game statistics."""
-        stats_x = 550
-        stats_y = 250
+        stats_x = 850
+        stats_y = 50
         
         # Draw score
         score_text = self.font.render(f"Score: {self.score}", True, WHITE)
@@ -371,3 +419,10 @@ class TetrisGameWithAI:
         paused_text = self.large_font.render("PAUSED", True, WHITE)
         text_rect = paused_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
         screen.blit(paused_text, text_rect)
+        
+    def cleanup(self):
+        if hasattr(self, 'csv_logger'):
+            self.csv_logger.close()
+    
+    def __del__(self):
+        self.cleanup()

@@ -14,7 +14,9 @@ def main(seed, ai_model):
     
     # Set up the display
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-    pygame.display.set_caption(TITLE)
+    
+    title_with_seed = f"{TITLE} - Seed: {seed}"
+    pygame.display.set_caption(title_with_seed)
     
     # Create a clock for controlling the frame rate
     clock = pygame.time.Clock()
