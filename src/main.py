@@ -51,12 +51,12 @@ def main(seed, ai_model):
         clock.tick(FPS)
 
 def experiment(common_rates:CommonRates):
-    exp = Experiment(iteration_count=10, population_size=20, common_rates=common_rates)
+    exp = Experiment(iteration_count=10, population_size=20, tournament_size=5, common_rates=common_rates)
     exp()
     
 
 if __name__ == "__main__":
-    common_rates = CommonRates(0.8, 0.1, 0.4, 0.2, 0.6, 5)
+    common_rates = CommonRates(0.5, 0.8, 0.1, 0.4, 0.2, 0.6, 5)
     #innovation_db = InnovationDatabase(11) # (input size + output size -1) is the beginning node count
     #model = Model.generate_network(input_size=6, output_size=6, common_rates=common_rates, innovation_db=innovation_db, seed=DEFAULT_SEED_MODEL)
     #input = InputData(10, 20, 25, 30, 40, 50)

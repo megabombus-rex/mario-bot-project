@@ -15,11 +15,23 @@ class ExpSpecimen:
         self.model = model
 
 class Experiment:
-    def __init__(self, iteration_count:int, population_size:int, common_rates:CommonRates):
+    def __init__(self, iteration_count:int, population_size:int, tournament_size:int, common_rates:CommonRates):
         self.iteration_count = iteration_count
         self.population_size = population_size
+        self.tournament_size = tournament_size
         self.common_rates = common_rates
         self.rng = np.random.default_rng()
+
+    def tournament_selection(self, population):
+        contenders = self.rng.choice(
+            population, 
+            size=self.tournament_size, 
+            replace=False
+        )
+        
+        # The winner is the one with the highest fitness
+        winner = max(contenders, key=lambda x: x.fitness)
+        return winner
         
     def __call__(self):
         # Initialize pygame
@@ -69,14 +81,39 @@ class Experiment:
                 if (specimen.fitness > best_specimen.fitness):
                     best_specimen = specimen
                     
-            # crossover for each
-        
-            # while crossover is not implemented, just copy/re-reference the previous
-            for i in range(corrected_size):
-                next_population[i] = population[i]
-        
+            # sort population by fitness (descending order)
+            sorted_population = sorted(population, key=lambda x: x.fitness, reverse=True)
+
+            # elitism
+            next_population[0] = sorted_population[0]
+
+            # tournament selection and crossover
+            for i in range(1, corrected_size):
+                parent1 = self.tournament_selection(sorted_population)
+                parent2 = self.tournament_selection(sorted_population)
+                while parent2 == parent1:
+                    parent2 = self.tournament_selection(sorted_population)
+
+                # crossover
+                if self.rng.random() < self.common_rates.crossover_rate:
+                    genome1 = parent1.model.genome
+                    genome2 = parent2.model.genome
+                    fitness1 = parent1.fitness
+                    fitness2 = parent2.fitness
+
+                    child_genome = genome1.crossover(genome2, fitness1, fitness2)
+                else:
+                    # if no crossover, just clone better parent
+                    if parent1.fitness >= parent2.fitness:
+                        child_genome = parent1.model.genome.copy()
+                    else:
+                        child_genome = parent2.model.genome.copy()
+
+                child_model = Model(genome=child_genome, previous_network_fitness=0)
+                next_population[i] = ExpSpecimen(child_model, 0)
+
             # mutation for each
-            for specimen in next_population:
+            for specimen in next_population[1:]:
                 if self.rng.random() < self.common_rates.node_addition_mutation_rate:
                     specimen.model.genome.mutation_add_node()
                 if self.rng.random() < self.common_rates.connection_addition_mutation_rate:
