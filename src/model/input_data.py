@@ -22,20 +22,23 @@ class InputData:
 # areas are min/max/mean pooled 
 class InputDataNew:
     def __init__(self, x_block:float, y_block:float, block_type:float, block_fall_speed:float, block_rotation:float, 
-                 area_1:float, area_2:float, area_3:float, area_4:float, area_5:float, area_6:float, area_7:float, area_8:float):
+                 column_1:float, column_2:float, column_3:float, column_4:float, column_5:float, column_6:float, column_7:float, column_8:float, column_9: float, column_10: float, drop_distance: float):
         self.x_block = x_block
         self.y_block = y_block
         self.block_type = block_type
         self.block_fall_speed = block_fall_speed
         self.block_rotation = block_rotation
-        self.area_1 = area_1
-        self.area_2 = area_2
-        self.area_3 = area_3
-        self.area_4 = area_4
-        self.area_5 = area_5
-        self.area_6 = area_6
-        self.area_7 = area_7
-        self.area_8 = area_8
+        self.column_1 = column_1
+        self.column_2 = column_2
+        self.column_3 = column_3
+        self.column_4 = column_4
+        self.column_5 = column_5
+        self.column_6 = column_6
+        self.column_7 = column_7
+        self.column_8 = column_8
+        self.column_9 = column_9
+        self.column_10 = column_10
+        self.drop_distance = drop_distance
         
     def to_dict(self):
         dict = {
@@ -44,13 +47,16 @@ class InputDataNew:
         2 : self.block_type,
         3 : self.block_fall_speed,
         4 : self.block_rotation,
-        5 : self.area_1,
-        6 : self.area_2,
-        7 : self.area_3,
-        8 : self.area_4,
-        9 : self.area_5,
-        10 : self.area_6,
-        11 : self.area_7,
-        12 : self.area_8
+        5 : self.column_1,
+        6 : self.column_2,
+        7 : self.column_3,
+        8 : self.column_4,
+        9 : self.column_5,
+        10 : self.column_6,
+        11 : self.column_7,
+        12 : self.column_8,
+        13 : self.column_9,
+        14 : self.column_10,
+        15 : self.drop_distance
         }
         return dict

@@ -1,7 +1,7 @@
 from model.common_genome_data import *
 from model.model import *
 from model.model_constants import INPUT_NETWORK_SIZE, OUTPUT_NETWORK_SIZE
-from simulation.sim_constants import FITNESS_MULITPLIER_LC, HARD_DROP_COUNT_MULTIPLIER
+from simulation.sim_constants import FITNESS_MULITPLIER_LC, HARD_DROP_COUNT_PENALTY_MULTIPLIER, LIFETIME_VALUE_MULTIPLIER
 from game.model_scripts.game_with_ai import TetrisGameWithAI
 from game.constants import DEFAULT_SEED, FPS
 from model.genome import InnovationDatabase
@@ -95,7 +95,7 @@ class Experiment:
                     clock.tick(FPS)
                 runtimeSum_s_PerIt += time.time() - start
                 clearedLinesPerIt += game.lines_cleared
-                specimen.fitness = game.score + (game.lines_cleared * FITNESS_MULITPLIER_LC) - (game.hard_drop_count * HARD_DROP_COUNT_MULTIPLIER)
+                specimen.fitness =  self._calculate_fitness(game.score, game.lines_cleared, game.move_count, game.hard_drop_count)
                 #specimen.fitness = game.score
                 #print(f'Specimen finess: {specimen.fitness}')
                 fitnessSumPerIt += specimen.fitness
@@ -118,7 +118,6 @@ class Experiment:
             # tournament selection and crossover
             for i in range(1, corrected_size):
                 parent1 = self.tournament_selection(sorted_population)
-
                 # crossover
                 if self.rng.random() < self.common_rates.crossover_rate:
                     parent2 = self.tournament_selection(sorted_population)
@@ -142,7 +141,7 @@ class Experiment:
                 child_model = Model(genome=child_genome, previous_network_fitness=0)
                 next_population[i] = ExpSpecimen(child_model, 0)
 
-            # mutation for each
+            # mutation for each except elitism
             for specimen in next_population[1:]:
                 if self.rng.random() < self.common_rates.node_addition_mutation_rate:
                     specimen.model.genome.mutation_add_node()
@@ -159,8 +158,12 @@ class Experiment:
             current_iteration += 1
         
         print(f'Best fitness is: {best_specimen.fitness}')
-        draw_diagrams(mean_scores=mean_fitnesses, mean_runtimes=mean_runtime, mean_clearedLines=mean_clearedLines, common_rates=self.common_rates, fps_recordered=FPS)
+        draw_diagrams(mean_scores=mean_fitnesses, mean_runtimes=mean_runtime, mean_clearedLines=mean_clearedLines, best_fitness=best_specimen.fitness, pop_size=self.population_size, common_rates=self.common_rates, fps_recordered=FPS)
         visualize_phenotype(best_specimen.model.genome)
         
-    
-    
+    def _calculate_fitness(self, score, lines_cleared, moves_count, hard_drop_count):
+        base = score + (lines_cleared * FITNESS_MULITPLIER_LC)
+        efficiency_bonus = score / max(1, moves_count)
+        hard_drop_penalty = hard_drop_count * HARD_DROP_COUNT_PENALTY_MULTIPLIER
+        return base + efficiency_bonus - hard_drop_penalty
+        

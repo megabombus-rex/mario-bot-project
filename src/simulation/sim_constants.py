@@ -1,2 +1,6 @@
-FITNESS_MULITPLIER_LC = 50
-HARD_DROP_COUNT_MULTIPLIER = 0.5
+FITNESS_MULITPLIER_LC = 100
+HARD_DROP_COUNT_PENALTY_MULTIPLIER = 5
+LIFETIME_VALUE_MULTIPLIER = 500
+
+# LIFETIME and HARD_DROP are kinda opposites, so the lifetime should be promoted and hard drops should be discouraged
+# LIFETIME and HARD_DROP are directly connected to moves, they should be (imo) in the same order

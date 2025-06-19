@@ -66,6 +66,20 @@ class Board:
             return (area[1] - area[0]) * (area[3] - area[2])
         except:
             return 1.0 # cannot be 0 so no division by 0 happens by accident
+        
+    def get_column_heights(self):
+        columns = []
+        for col in range(GRID_WIDTH):
+            col_height = 20
+            row = GRID_HEIGHT - 1
+            while(row >= 0):
+                if (self.grid[row][col] != None):
+                        break
+                col_height -= 1
+                row -= 1
+            columns.append(col_height)
+        return columns
+                
     
     def is_valid_position(self, positions):
         """
