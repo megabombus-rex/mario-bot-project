@@ -46,6 +46,7 @@ class TetrisGameWithAI:
         
         # test
         self.hard_drop_count = 0
+        self.move_count = 0
         
         # AI controller
         self.ai_controller = AIController(model=ai_model, move_selection_probability_function=Softmax())
@@ -54,7 +55,7 @@ class TetrisGameWithAI:
         self.neat_visualizer = NEATVisualizer(NEAT_VIZ_X, NEAT_VIZ_Y, NEAT_VIZ_WIDTH, NEAT_VIZ_HEIGHT)
         
         # CSV Logger for AI moves
-        self.csv_logger = CSVLogger(seed=self.seed)
+        #self.csv_logger = CSVLogger(seed=self.seed)
         
         # Create the first tetromino
         self.current_tetromino = get_random_tetromino(x=5, y=0, rng=self.rng)
@@ -82,7 +83,7 @@ class TetrisGameWithAI:
         """
         if self.game_over:
             if key == pygame.K_r:
-                self.csv_logger.reset()
+                #self.csv_logger.reset()
                 
                 # for the time being, here we can mutate the model
                 if self.ai_controller.model.genome.rng.random() < self.ai_controller.model.genome.common_rates.node_addition_mutation_rate:
@@ -158,17 +159,21 @@ class TetrisGameWithAI:
         
     def hard_drop(self):
         """Immediately drop the tetromino to the bottom."""
-        drop_distance = 0
-        
-        # Keep moving down until collision
-        while self.move_tetromino(0, 1):
-            drop_distance += 1
+        drop_distance = self.get_drop_distance()
             
         # Add points for hard drop
         self.score += drop_distance * HARD_DROP_POINTS
         
         # Lock the tetromino in place
         self.lock_tetromino()
+        
+    # Keep moving down until collision
+    def get_drop_distance(self):
+        drop_distance = 0
+        while self.move_tetromino(0, 1):
+            drop_distance += 1
+        return drop_distance
+        
         
     def calculate_drop_position(self):
         """Calculate how far the current tetromino can drop."""
@@ -274,22 +279,23 @@ class TetrisGameWithAI:
             Movement.HARD_DROP: "HARD_DROP"
         }
         
-        log_data = {
-            'move_type': move_names.get(move, "UNKNOWN"),
-            'tetromino_x': current_tetromino.x,
-            'tetromino_y': current_tetromino.y,
-            'tetromino_shape': current_tetromino.shape,
-            'tetromino_rotation': current_tetromino.rotation,
-            'next_shape': next_tetromino.shape,
-            'fall_speed': self.fall_speed,
-            'score': self.score,
-            'level': self.level,
-            'lines_cleared': self.lines_cleared,
-            'probabilities': probabilities,
-            'chosen_probability': chosen_probability
-        }
-        self.csv_logger.log_move(log_data)
+        #log_data = {
+        #    'move_type': move_names.get(move, "UNKNOWN"),
+        #    'tetromino_x': current_tetromino.x,
+        #    'tetromino_y': current_tetromino.y,
+        #    'tetromino_shape': current_tetromino.shape,
+        #    'tetromino_rotation': current_tetromino.rotation,
+        #    'next_shape': next_tetromino.shape,
+        #    'fall_speed': self.fall_speed,
+        #    'score': self.score,
+        #    'level': self.level,
+        #    'lines_cleared': self.lines_cleared,
+        #    'probabilities': probabilities,
+        #    'chosen_probability': chosen_probability
+        #}
+        #self.csv_logger.log_move(log_data)
          
+        self.move_count += 1
         if move == Movement.MOVE_LEFT:
             #print('Moving left.')
             self.move_tetromino(-1, 0)
@@ -438,4 +444,5 @@ class TetrisGameWithAI:
             self.csv_logger.close()
     
     def __del__(self):
-        self.cleanup()
+        pass
+        #self.cleanup()
