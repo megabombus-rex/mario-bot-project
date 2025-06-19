@@ -1,6 +1,7 @@
 import networkx as nx
 import matplotlib.pyplot as plt
 from model.model_constants import (INPUT_NODE, OUTPUT_NODE, HIDDEN_NODE)
+from model.common_genome_data import *
 
 def visualize_phenotype(genome, title="Phenotype Visualization"):
     G = nx.DiGraph()
@@ -60,3 +61,24 @@ def visualize_phenotype(genome, title="Phenotype Visualization"):
     plt.axis('off')
     plt.tight_layout()
     plt.show()
+    
+
+def draw_diagrams(mean_scores, mean_runtimes, mean_clearedLines, common_rates:CommonRates, fps_recordered=60):
+    # the mean values are corresponding to iterations (ordered)
+    iterations = range(1, len(mean_scores) + 1)
+    
+    fig, (ax_sc, ax_rt, ax_cl)  = plt.subplots(1, 3) 
+    
+    ax_sc.set(xlabel='Iteration', ylabel='Mean score') 
+    ax_sc.set_title('Mean score per iteration')
+    
+    ax_rt.set(xlabel='Iteration', ylabel='Mean runtime') 
+    ax_rt.set_title('Mean runtime per iteration')
+    
+    ax_cl.set(xlabel='Iteration', ylabel='Mean cleared lines') 
+    ax_cl.set_title('Mean cleared lines per iteration')
+    
+    fig.suptitle(f'Parameters: CxR: {common_rates.crossover_rate}, WMR: {common_rates.weight_mutation_rate}, AFR: {common_rates.activation_mutation_rate}, CAMR: {common_rates.connection_addition_mutation_rate}, NAMR: {common_rates.node_addition_mutation_rate}, SCP: {common_rates.start_connection_probability}, MaxSC: {common_rates.max_start_connection_count}  FPS: {fps_recordered}')
+    ax_sc.plot(iterations, mean_scores, 'tab:green')
+    ax_rt.plot(iterations, mean_runtimes, 'tab:blue')
+    ax_cl.plot(iterations, mean_clearedLines, 'tab:red')
