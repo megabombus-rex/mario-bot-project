@@ -44,9 +44,11 @@ class TetrisGameWithAI:
         self.game_over = False
         self.paused = False
         
+        # test
+        self.hard_drop_count = 0
+        
         # AI controller
         self.ai_controller = AIController(model=ai_model, move_selection_probability_function=Softmax())
-        #self.ai_mode = False  # Start with human control
         
         # NEAT visualizer
         self.neat_visualizer = NEATVisualizer(NEAT_VIZ_X, NEAT_VIZ_Y, NEAT_VIZ_WIDTH, NEAT_VIZ_HEIGHT)
@@ -253,13 +255,23 @@ class TetrisGameWithAI:
         current_tetromino = self.current_tetromino
         next_tetromino = self.next_tetromino
         
+        # OLD
+        #move_names = {
+        #    Movement.MOVE_LEFT: "MOVE_LEFT",
+        #    Movement.MOVE_RIGHT: "MOVE_RIGHT", 
+        #    Movement.ROTATE: "ROTATE",
+        #    Movement.SOFT_DROP: "SOFT_DROP",
+        #    Movement.HARD_DROP: "HARD_DROP",
+        #    Movement.NO_MOVE: "NO_MOVE"
+        #}
+        
+        # NEW
         move_names = {
             Movement.MOVE_LEFT: "MOVE_LEFT",
             Movement.MOVE_RIGHT: "MOVE_RIGHT", 
             Movement.ROTATE: "ROTATE",
-            Movement.SOFT_DROP: "SOFT_DROP",
-            Movement.HARD_DROP: "HARD_DROP",
-            Movement.NO_MOVE: "NO_MOVE"
+            Movement.NO_MOVE: "NO_MOVE",
+            Movement.HARD_DROP: "HARD_DROP"
         }
         
         log_data = {
@@ -279,27 +291,28 @@ class TetrisGameWithAI:
         self.csv_logger.log_move(log_data)
          
         if move == Movement.MOVE_LEFT:
-            print('Moving left.')
+            #print('Moving left.')
             self.move_tetromino(-1, 0)
         elif move == Movement.MOVE_RIGHT:
-            print('Moving right.')
+            #print('Moving right.')
             self.move_tetromino(1, 0)
         elif move == Movement.ROTATE:
-            print('Rotating.')
+            #print('Rotating.')
             self.rotate_tetromino()
-        elif move == Movement.SOFT_DROP:
-            print('Soft drop done.')
-            self.soft_drop = True
+        #elif move == Movement.SOFT_DROP:
+        #    print('Soft drop done.')
+        #    self.soft_drop = True
         elif move == Movement.HARD_DROP:
-            print('Hard drop d(-__-)b.')
+        #    print('Hard drop d(-__-)b.')
+            self.hard_drop_count += 1
             self.hard_drop()
         elif move == Movement.NO_MOVE:
-            print('Doing nothing.')
+            #print('Doing nothing.')
             return
         # Reset soft drop after processing
-        if move != Movement.SOFT_DROP:
-            self.soft_drop = False
-            
+        #if move != Movement.SOFT_DROP:
+        #    self.soft_drop = False
+               
     def draw(self, screen):
         """
         Draw the game state.
