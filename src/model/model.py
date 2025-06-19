@@ -1,5 +1,5 @@
 from model.genome import (NodeGene as Node, ConnectionGene as Connection, Genome, InnovationDatabase)
-from model.input_data import InputData
+from model.input_data import InputDataNew
 from model.model_constants import (INPUT_NODE, OUTPUT_NODE, HIDDEN_NODE)
 from model.common_genome_data import *
 import numpy as np
@@ -46,7 +46,7 @@ class Model:
             id_count += 1
         
         for _ in range(common_rates.max_start_connection_count):
-            if rng.uniform(0, 1) > common_rates.start_connection_probability:
+            if rng.uniform(0, 1) < common_rates.start_connection_probability:
                 in_node = rng.choice(input_neurons)
                 out_node = rng.choice(output_neurons)
 
@@ -56,7 +56,7 @@ class Model:
 
                 innov = innovation_db.get_or_create_connection_innovation(in_node_id=in_node.id, out_node_id=out_node.id)
 
-                connection = Connection(in_node, out_node, weight=rng.random(), innovation_number=innov)
+                connection = Connection(in_node, out_node, weight=rng.uniform(-1, 1), innovation_number=innov)
                 connections.append(connection)
         
         genome = Genome(nodes=input_neurons + output_neurons, connections=connections, input_nodes_count=input_size, output_nodes_count=output_size, innovation_db=innovation_db, rng=rng, common_rates=common_rates)
@@ -82,15 +82,6 @@ class Model:
         # 2. - implemented elsewhere, not needed
         
         # 3.
-        #nodes_without_input = filter(lambda x: x not in input, sorted_nodes)
-        #
-        #for node in nodes_without_input:
-        #    for connection in node.inputs:
-        #        if not connection.is_disabled:
-        #            input_val =  connection.in_node.output
-        #            node.input_sum += input_val * connection.weight
-        #    node.output = node.activation_function(node.input_sum)
-        #    print(f'Node {node.id} is a node of type {node.type} and outputs value {node.output}.')
         
         for node in self.phenotype:
             if node.id not in input:  # Skip input nodes
@@ -99,22 +90,16 @@ class Model:
                     if not conn.is_disabled:
                         input_val = conn.in_node.output
                         node.input_sum += input_val * conn.weight
-                        #print(f'Added input_val: {input_val} with weight {conn.weight}')
-                node.output = node.activation_function(node.input_sum)
-                #print(f'Node {node.id} output is: {node.output}.')
-                #print(f'Node {node.id} input sum is: {node.input_sum}.')
-        #for node in self.phenotype:
-        #    if conn in node.inputs:
-        #        if not conn.is_disabled:
-        #            print(f'Node id: {node.id}, node type: {node_names[node.type]}, node output: {node.output}.')                
+                        #print(f'Node {node.id} input sum: {node.input_sum}')
+                node.output = node.activation_function(node.input_sum)        
             
         # 4.
         outputs = {}
         for node in self.genome.nodes:
             if node.type == OUTPUT_NODE:
                 outputs[node.id] = node.output
-                #print(f'Node {node.id} is an output node and outputs value {node.output}.')
-        
+                #print(f'Node {node.id} output: {node.output}')              
+
         return outputs
         
     # simulate inputs to the neurons to check if they are sorted, this should be called once a change (mutation/crossover) occurs and probably stored
@@ -151,7 +136,7 @@ class Model:
         return [node_map[nid] for nid in sorted_ids]
     
     # forward the data
-    def __call__(self, input=InputData):
+    def __call__(self, input=InputDataNew):
         #for connection in self.genome.connections:
             #print(f'There is a connection between node {connection.in_node.id} and node {connection.out_node.id} with weight {connection.weight}.')
         return self.feed_forward(input.to_dict())

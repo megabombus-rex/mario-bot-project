@@ -4,7 +4,7 @@ from enum import IntEnum
 SCREEN_WIDTH = 1200  
 SCREEN_HEIGHT = 700
 TITLE = "Team Tetris"
-FPS = 60
+FPS = 600
 
 # Board dimensions
 GRID_WIDTH = 10
@@ -21,19 +21,13 @@ CELL_SIZE = 30
 #    NO_MOVE = 5
 
 # output!!
-#class Movement(IntEnum):
-#    MOVE_LEFT = 0
-#    MOVE_RIGHT = 1
-#    ROTATE = 2
-#    NO_MOVE = 3
-#    HARD_DROP = 4
     
 class Movement(IntEnum):
     MOVE_LEFT = 0
     MOVE_RIGHT = 1
     ROTATE = 2
-    HARD_DROP = 3
-    NO_MOVE = 4
+    NO_MOVE = 3
+    HARD_DROP = 4
 
 # Board position
 BOARD_OFFSET_X = (SCREEN_WIDTH - GRID_WIDTH * CELL_SIZE) // 2
