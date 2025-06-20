@@ -12,7 +12,7 @@ class AIController:
     def __init__(self, model, move_selection_probability_function:ProbabilityFunction):
         self.model = model
         self.probability_function = move_selection_probability_function
-        self.input = input.InputDataNew(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+        self.input = input.InputDataExtended(0.0, 0.0, 0.0, 0.0, 0.0, [], 0.0, [])
     
     # this must be normalized!!
     def get_game_data(self, game):
@@ -23,15 +23,13 @@ class AIController:
         #next_shape_idx = TETROMINOES_INDEXES[game.next_tetromino.shape] / float(len(TETROMINOES_INDEXES))
         rotation = current_tetromino.rotation / 3.0 # 0 - 3 values 
         game_speed = game.fall_speed / float(EMPIRICAL_MAX_SPEED)
-        drop_distance = game.get_drop_distance() / float(GRID_HEIGHT)
+        drop_distance = game.current_drop_distance / float(GRID_HEIGHT)
         column_heights_normalized = [column / float(GRID_HEIGHT) for column in game.board.get_column_heights()]
+        board_state_flattened = [x * 0.1 for x in game.board.get_board_state_flattened()] # 'normalize' to not overwhelm the network with 200 neurons
         
         # value / area_size 
         #self.input = input.InputData(x, y, current_shape_idx, game.fall_speed, current_tetromino.rotation, next_block_type=next_shape_idx)
-        self.input = input.InputDataNew(x, y, current_shape_idx, game_speed, rotation, 
-                                        column_1=column_heights_normalized[0], column_2=column_heights_normalized[1], column_3=column_heights_normalized[2], column_4=column_heights_normalized[3],
-                                        column_5=column_heights_normalized[4], column_6=column_heights_normalized[5], column_7=column_heights_normalized[6], column_8=column_heights_normalized[7],
-                                        column_9=column_heights_normalized[8], column_10=column_heights_normalized[9], drop_distance=drop_distance)
+        self.input = input.InputDataExtended(x, y, current_shape_idx, game_speed, rotation, columns_normalized=column_heights_normalized, drop_distance=drop_distance, board_state=board_state_flattened)
     
     def get_next_move(self):
         outputs = self.model(self.input)

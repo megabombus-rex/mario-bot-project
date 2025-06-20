@@ -1,5 +1,5 @@
 from model.genome import (NodeGene as Node, ConnectionGene as Connection, Genome, InnovationDatabase)
-from model.input_data import InputDataNew
+from model.input_data import InputDataExtended
 from model.model_constants import (INPUT_NODE, OUTPUT_NODE, HIDDEN_NODE)
 from model.common_genome_data import *
 import numpy as np
@@ -136,7 +136,7 @@ class Model:
         return [node_map[nid] for nid in sorted_ids]
     
     # forward the data
-    def __call__(self, input=InputDataNew):
+    def __call__(self, input=InputDataExtended):
         #for connection in self.genome.connections:
             #print(f'There is a connection between node {connection.in_node.id} and node {connection.out_node.id} with weight {connection.weight}.')
         return self.feed_forward(input.to_dict())

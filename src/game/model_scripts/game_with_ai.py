@@ -43,6 +43,7 @@ class TetrisGameWithAI:
         self.lines_cleared = 0
         self.game_over = False
         self.paused = False
+        self.current_drop_distance = 0
         
         # test
         self.hard_drop_count = 0
@@ -159,20 +160,23 @@ class TetrisGameWithAI:
         
     def hard_drop(self):
         """Immediately drop the tetromino to the bottom."""
-        drop_distance = self.get_drop_distance()
+        self.get_drop_distance()
             
         # Add points for hard drop
-        self.score += drop_distance * HARD_DROP_POINTS
+        self.score += self.current_drop_distance * HARD_DROP_POINTS
+        #print(f'Added points {self.current_drop_distance * HARD_DROP_POINTS}')
         
         # Lock the tetromino in place
         self.lock_tetromino()
         
     # Keep moving down until collision
     def get_drop_distance(self):
+        self.current_drop_distance = 0
         drop_distance = 0
         while self.move_tetromino(0, 1):
             drop_distance += 1
-        return drop_distance
+
+        self.current_drop_distance = drop_distance
         
         
     def calculate_drop_position(self):
