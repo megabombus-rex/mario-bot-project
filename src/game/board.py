@@ -44,12 +44,7 @@ class Board:
         # should be mean by default
         if pooling_algorithm == None:
             pooling_algorithm = MeanPoolingAlgorithm()
-        
-        #for i in range(GRID_HEIGHT):
-        #    for j in range(GRID_WIDTH):
-        #        if (self.grid[i][j] != None):
-        #            print(f'Grid {i}, {j}: {self.grid[i][j]}')
-        
+                
         try:
             area = self.areas[area_id]
             # end - start X, end - start Y, startX, startY
@@ -79,6 +74,13 @@ class Board:
                 row -= 1
             columns.append(col_height)
         return columns
+    
+    def get_board_state_flattened(self):
+        flattened = []
+        for row in self.grid:
+            for cell in row:
+                flattened.append(1 if cell is not None else 0)  # 1 for filled, 0 for empty
+        return flattened
                 
     
     def is_valid_position(self, positions):
@@ -126,7 +128,7 @@ class Board:
         # Add each block to the grid
         for x, y in positions:
             #print(f'Adding {tetromino.color} to position: ({x},{y})')
-            self.grid[y][x] = 1
+            self.grid[y][x] = tetromino.color
             
         # Check for completed lines
         self.check_lines()

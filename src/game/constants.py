@@ -4,7 +4,7 @@ from enum import IntEnum
 SCREEN_WIDTH = 1200  
 SCREEN_HEIGHT = 700
 TITLE = "Team Tetris"
-FPS = 600
+FPS = 1200
 
 # Board dimensions
 GRID_WIDTH = 10
@@ -12,22 +12,22 @@ GRID_HEIGHT = 20
 CELL_SIZE = 30
 
 # Movement mapping
-#class Movement(IntEnum):
-#    MOVE_LEFT = 0
-#    MOVE_RIGHT = 1
-#    ROTATE = 2
-#    SOFT_DROP = 3
-#    HARD_DROP = 4
-#    NO_MOVE = 5
-
-# output!!
-    
 class Movement(IntEnum):
     MOVE_LEFT = 0
     MOVE_RIGHT = 1
     ROTATE = 2
-    NO_MOVE = 3
+    SOFT_DROP = 3
     HARD_DROP = 4
+    NO_MOVE = 5
+
+# output!!
+    
+#class Movement(IntEnum):
+#    MOVE_LEFT = 0
+#    MOVE_RIGHT = 1
+#    ROTATE = 2
+#    NO_MOVE = 3
+#    HARD_DROP = 4
 
 # Board position
 BOARD_OFFSET_X = (SCREEN_WIDTH - GRID_WIDTH * CELL_SIZE) // 2
@@ -70,8 +70,8 @@ POINTS_PER_LINE = {
     4: 800  # Tetris!
 }
 SOFT_DROP_POINTS = 1  # Per cell dropped
-#HARD_DROP_POINTS = 2  # Per cell dropped
-HARD_DROP_POINTS = 0  # Per cell dropped
+HARD_DROP_POINTS = 2  # Per cell dropped
+#HARD_DROP_POINTS = 0  # Per cell dropped
 
 # Key repeat settings
 KEY_DELAY = 200
