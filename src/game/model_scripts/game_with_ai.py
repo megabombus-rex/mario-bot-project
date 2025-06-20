@@ -43,16 +43,20 @@ class TetrisGameWithAI:
         self.lines_cleared = 0
         self.game_over = False
         self.paused = False
+        self.current_drop_distance = 0
+        
+        # test
+        self.hard_drop_count = 0
+        self.move_count = 0
         
         # AI controller
         self.ai_controller = AIController(model=ai_model, move_selection_probability_function=Softmax())
-        #self.ai_mode = False  # Start with human control
         
         # NEAT visualizer
         self.neat_visualizer = NEATVisualizer(NEAT_VIZ_X, NEAT_VIZ_Y, NEAT_VIZ_WIDTH, NEAT_VIZ_HEIGHT)
         
         # CSV Logger for AI moves
-        self.csv_logger = CSVLogger(seed=self.seed)
+        #self.csv_logger = CSVLogger(seed=self.seed)
         
         # Create the first tetromino
         self.current_tetromino = get_random_tetromino(x=5, y=0, rng=self.rng)
@@ -80,7 +84,7 @@ class TetrisGameWithAI:
         """
         if self.game_over:
             if key == pygame.K_r:
-                self.csv_logger.reset()
+                #self.csv_logger.reset()
                 
                 # for the time being, here we can mutate the model
                 if self.ai_controller.model.genome.rng.random() < self.ai_controller.model.genome.common_rates.node_addition_mutation_rate:
@@ -156,17 +160,24 @@ class TetrisGameWithAI:
         
     def hard_drop(self):
         """Immediately drop the tetromino to the bottom."""
-        drop_distance = 0
-        
-        # Keep moving down until collision
-        while self.move_tetromino(0, 1):
-            drop_distance += 1
+        self.get_drop_distance()
             
         # Add points for hard drop
-        self.score += drop_distance * HARD_DROP_POINTS
+        self.score += self.current_drop_distance * HARD_DROP_POINTS
+        #print(f'Added points {self.current_drop_distance * HARD_DROP_POINTS}')
         
         # Lock the tetromino in place
         self.lock_tetromino()
+        
+    # Keep moving down until collision
+    def get_drop_distance(self):
+        self.current_drop_distance = 0
+        drop_distance = 0
+        while self.move_tetromino(0, 1):
+            drop_distance += 1
+
+        self.current_drop_distance = drop_distance
+        
         
     def calculate_drop_position(self):
         """Calculate how far the current tetromino can drop."""
@@ -253,53 +264,65 @@ class TetrisGameWithAI:
         current_tetromino = self.current_tetromino
         next_tetromino = self.next_tetromino
         
+        # OLD
+        #move_names = {
+        #    Movement.MOVE_LEFT: "MOVE_LEFT",
+        #    Movement.MOVE_RIGHT: "MOVE_RIGHT", 
+        #    Movement.ROTATE: "ROTATE",
+        #    Movement.SOFT_DROP: "SOFT_DROP",
+        #    Movement.HARD_DROP: "HARD_DROP",
+        #    Movement.NO_MOVE: "NO_MOVE"
+        #}
+        
+        # NEW
         move_names = {
             Movement.MOVE_LEFT: "MOVE_LEFT",
             Movement.MOVE_RIGHT: "MOVE_RIGHT", 
             Movement.ROTATE: "ROTATE",
-            Movement.SOFT_DROP: "SOFT_DROP",
-            Movement.HARD_DROP: "HARD_DROP",
-            Movement.NO_MOVE: "NO_MOVE"
+            Movement.NO_MOVE: "NO_MOVE",
+            Movement.HARD_DROP: "HARD_DROP"
         }
         
-        log_data = {
-            'move_type': move_names.get(move, "UNKNOWN"),
-            'tetromino_x': current_tetromino.x,
-            'tetromino_y': current_tetromino.y,
-            'tetromino_shape': current_tetromino.shape,
-            'tetromino_rotation': current_tetromino.rotation,
-            'next_shape': next_tetromino.shape,
-            'fall_speed': self.fall_speed,
-            'score': self.score,
-            'level': self.level,
-            'lines_cleared': self.lines_cleared,
-            'probabilities': probabilities,
-            'chosen_probability': chosen_probability
-        }
-        self.csv_logger.log_move(log_data)
+        #log_data = {
+        #    'move_type': move_names.get(move, "UNKNOWN"),
+        #    'tetromino_x': current_tetromino.x,
+        #    'tetromino_y': current_tetromino.y,
+        #    'tetromino_shape': current_tetromino.shape,
+        #    'tetromino_rotation': current_tetromino.rotation,
+        #    'next_shape': next_tetromino.shape,
+        #    'fall_speed': self.fall_speed,
+        #    'score': self.score,
+        #    'level': self.level,
+        #    'lines_cleared': self.lines_cleared,
+        #    'probabilities': probabilities,
+        #    'chosen_probability': chosen_probability
+        #}
+        #self.csv_logger.log_move(log_data)
          
+        self.move_count += 1
         if move == Movement.MOVE_LEFT:
-            print('Moving left.')
+            #print('Moving left.')
             self.move_tetromino(-1, 0)
         elif move == Movement.MOVE_RIGHT:
-            print('Moving right.')
+            #print('Moving right.')
             self.move_tetromino(1, 0)
         elif move == Movement.ROTATE:
-            print('Rotating.')
+            #print('Rotating.')
             self.rotate_tetromino()
-        elif move == Movement.SOFT_DROP:
-            print('Soft drop done.')
-            self.soft_drop = True
+        #elif move == Movement.SOFT_DROP:
+        #    print('Soft drop done.')
+        #    self.soft_drop = True
         elif move == Movement.HARD_DROP:
-            print('Hard drop d(-__-)b.')
+        #    print('Hard drop d(-__-)b.')
+            self.hard_drop_count += 1
             self.hard_drop()
         elif move == Movement.NO_MOVE:
-            print('Doing nothing.')
+            #print('Doing nothing.')
             return
         # Reset soft drop after processing
-        if move != Movement.SOFT_DROP:
-            self.soft_drop = False
-            
+        #if move != Movement.SOFT_DROP:
+        #    self.soft_drop = False
+               
     def draw(self, screen):
         """
         Draw the game state.
@@ -425,4 +448,5 @@ class TetrisGameWithAI:
             self.csv_logger.close()
     
     def __del__(self):
-        self.cleanup()
+        pass
+        #self.cleanup()

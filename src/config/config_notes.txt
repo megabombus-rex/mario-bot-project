@@ -1,0 +1,33 @@
+Inputs (normalized):
+x, y
+block_type,
+fall_speed,
+rotation,
+column_1-10
+drop_distance
+
+potential changes to inputs:
+almost (?) complete lines count
+bumpiness
+
+outputs:
+0 - left
+1 - right
+2 - rotate
+3 - hard drop
+4 - no_move
+
+potential changes to outputs:
+change softmax to other
+
+fitness:
+    def _calculate_fitness(self, score, lines_cleared, moves_count, hard_drop_count):
+        base = score + (lines_cleared * FITNESS_MULITPLIER_LC)
+        efficiency_bonus = score / max(1, moves_count)
+        hard_drop_penalty = hard_drop_count * HARD_DROP_COUNT_PENALTY_MULTIPLIER
+        return base + efficiency_bonus - hard_drop_penalty
+
+potential changes to fitness:
+change multiplier
+add lifetime with multiplier (move_count or time, potential issues corresponding to FPS per test, maybe scale by this value)
+gameover = penalty (big)
