@@ -1,5 +1,5 @@
 FITNESS_MULITPLIER_LC = 100
-HARD_DROP_COUNT_PENALTY_MULTIPLIER = 5
+HARD_DROP_COUNT_PENALTY_MULTIPLIER = 0
 LIFETIME_VALUE_MULTIPLIER = 500
 
 # LIFETIME and HARD_DROP are kinda opposites, so the lifetime should be promoted and hard drops should be discouraged

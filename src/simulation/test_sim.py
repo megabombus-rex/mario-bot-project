@@ -47,8 +47,6 @@ class Experiment:
         clock = pygame.time.Clock()
         
         # Create a game instance
-        #game = TetrisGame()
-        #game = TetrisGameWithAI(seed=seed, ai_model=ai_model)
         corrected_size = self.population_size - 1
         
         population = [None] * corrected_size
@@ -62,6 +60,7 @@ class Experiment:
             population[i] = spec
         
         current_iteration = 1
+        best_fitness_ever = 0
         best_specimen = population[0]
         
         fl_popSize = float(self.population_size)
@@ -76,6 +75,7 @@ class Experiment:
         # main 'training' loop
         while (current_iteration <= self.iteration_count):
             print(f'Current iteration: {current_iteration}')
+            #print(f'Best specimen was {best_specimen.fitness}')
             # run test (headless) for each and set fitness
             
             fitnessSumPerIt = 0.0
@@ -96,11 +96,14 @@ class Experiment:
                 runtimeSum_s_PerIt += time.time() - start
                 clearedLinesPerIt += game.lines_cleared
                 specimen.fitness =  self._calculate_fitness(game.score, game.lines_cleared, game.move_count, game.hard_drop_count)
+                #print(f'Game score: {game.score}. Fitness: {specimen.fitness}.')
                 #specimen.fitness = game.score
                 #print(f'Specimen finess: {specimen.fitness}')
                 fitnessSumPerIt += specimen.fitness
-                if (specimen.fitness > best_specimen.fitness):
+                if (specimen.fitness > best_fitness_ever):
+                    best_fitness_ever = specimen.fitness
                     best_specimen = specimen
+                    print(f'Best specimen changed fitness to: {best_specimen.fitness}')
             
             avg_fitness = fitnessSumPerIt / fl_popSize
             avg_time = runtimeSum_s_PerIt / fl_popSize
@@ -111,10 +114,15 @@ class Experiment:
             
             # sort population by fitness (descending order)
             sorted_population = sorted(population, key=lambda x: x.fitness, reverse=True)
+            
+            if sorted_population[0].fitness > best_specimen.fitness:
+                best_specimen = population[0]
+                
+            next_population = [None] * corrected_size
 
             # elitism
-            next_population[0] = sorted_population[0]
-
+            next_population[0] = self._copy_specimen(sorted_population[0])
+            
             # tournament selection and crossover
             for i in range(1, corrected_size):
                 parent1 = self.tournament_selection(sorted_population)
@@ -143,18 +151,10 @@ class Experiment:
 
             # mutation for each except elitism
             for specimen in next_population[1:]:
-                if self.rng.random() < self.common_rates.node_addition_mutation_rate:
-                    specimen.model.genome.mutation_add_node()
-                if self.rng.random() < self.common_rates.connection_addition_mutation_rate:
-                    specimen.model.genome.mutation_add_connection()
-                if self.rng.random() < self.common_rates.weight_mutation_rate:
-                    specimen.model.genome.mutation_change_random_weight()
-                if self.rng.random() < self.common_rates.activation_mutation_rate:
-                    specimen.model.genome.mutation_change_activation_function()
+                self._apply_mutations(specimen)
             
             # replace old population
-            for i in range(corrected_size):
-                population[i] = next_population[i]
+            population = next_population
             current_iteration += 1
         
         print(f'Best fitness is: {best_specimen.fitness}')
@@ -166,4 +166,18 @@ class Experiment:
         efficiency_bonus = score / max(1, moves_count)
         hard_drop_penalty = hard_drop_count * HARD_DROP_COUNT_PENALTY_MULTIPLIER
         return base + efficiency_bonus - hard_drop_penalty
-        
+    
+    def _apply_mutations(self, specimen):
+        if self.rng.random() < self.common_rates.node_addition_mutation_rate:
+            specimen.model.genome.mutation_add_node()
+        if self.rng.random() < self.common_rates.connection_addition_mutation_rate:
+            specimen.model.genome.mutation_add_connection()
+        if self.rng.random() < self.common_rates.weight_mutation_rate:
+            specimen.model.genome.mutation_change_random_weight()
+        if self.rng.random() < self.common_rates.activation_mutation_rate:
+            specimen.model.genome.mutation_change_activation_function()
+            
+    def _copy_specimen(self, specimen):
+        copied_genome = specimen.model.genome.copy()
+        copied_model = Model(genome=copied_genome, previous_network_fitness=specimen.fitness)
+        return ExpSpecimen(copied_model, specimen.fitness)
