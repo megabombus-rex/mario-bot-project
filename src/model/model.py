@@ -22,11 +22,11 @@ class Model:
     # construct the model/network 
     # max possible starting connections should be low
     @classmethod
-    def generate_network(self, input_size:int, output_size:int, common_rates:CommonRates, innovation_db:InnovationDatabase, seed=None):
-        self.fitness = 0
+    def generate_network(cls, input_size:int, output_size:int, common_rates:CommonRates, innovation_db:InnovationDatabase, seed=None):
+        #self.fitness = 0
         input_neurons = []
         output_neurons = []
-        connections = []
+        #connections = []
         id_count = 0
         
         rng = None
@@ -35,31 +35,21 @@ class Model:
         else:
             rng = np.random.default_rng(seed)
         
-        for i in range(0, input_size):
+        for _ in range(0, input_size):
             node = Node(id_count, INPUT_NODE, Sigmoid())
             input_neurons.append(node)
             id_count += 1
         
-        for i in range(0, output_size):
+        for _ in range(0, output_size):
             node = Node(id_count, OUTPUT_NODE, Sigmoid())
             output_neurons.append(node)
             id_count += 1
         
-        for _ in range(common_rates.max_start_connection_count):
-            if rng.uniform(0, 1) < common_rates.start_connection_probability:
-                in_node = rng.choice(input_neurons)
-                out_node = rng.choice(output_neurons)
-
-                # Check if this exact connection already exists
-                if any(conn.in_node.id == in_node.id and conn.out_node.id == out_node.id for conn in connections):
-                    continue
-
-                innov = innovation_db.get_or_create_connection_innovation(in_node_id=in_node.id, out_node_id=out_node.id)
-
-                connection = Connection(in_node, out_node, weight=rng.uniform(-1, 1), innovation_number=innov)
-                connections.append(connection)
+        genome = Genome(nodes=input_neurons + output_neurons, connections=[], input_nodes_count=input_size, output_nodes_count=output_size, innovation_db=innovation_db, rng=rng, common_rates=common_rates)
         
-        genome = Genome(nodes=input_neurons + output_neurons, connections=connections, input_nodes_count=input_size, output_nodes_count=output_size, innovation_db=innovation_db, rng=rng, common_rates=common_rates)
+        for _ in range(common_rates.max_start_connection_count):
+            genome.mutation_add_connection()
+        
         return Model(genome=genome)
     
     def feed_forward(self, input:dict):

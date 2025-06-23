@@ -1,5 +1,9 @@
 class CommonRates:
-    def __init__(self, crossover_rate=float, weight_mutation_rate=float, activation_mutation_rate=float, connection_addition_mutation_rate=float, node_addition_mutation_rate=float, start_connection_probability=float, max_start_connection_count=int):
+    def __init__(self, crossover_rate=float, 
+                 weight_mutation_rate=float, activation_mutation_rate=float, 
+                 connection_addition_mutation_rate=float, node_addition_mutation_rate=float,
+                 connection_change_mutation_rate=float,
+                 start_connection_probability=float, max_start_connection_count=int):
         # this should be high, but not too high, otherwise it will not converge
         self.crossover_rate = crossover_rate
         # this can be found empirically
@@ -11,5 +15,6 @@ class CommonRates:
         # as above, compare
         self.node_addition_mutation_rate = node_addition_mutation_rate
         # starting population data
+        self.connection_change_mutation_rate = connection_change_mutation_rate
         self.start_connection_probability = start_connection_probability
         self.max_start_connection_count = max_start_connection_count

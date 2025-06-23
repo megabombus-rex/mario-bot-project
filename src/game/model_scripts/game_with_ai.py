@@ -8,7 +8,7 @@ from game.constants import (
     INITIAL_FALL_SPEED, LEVEL_SPEEDUP, POINTS_PER_LINE,
     SOFT_DROP_POINTS, HARD_DROP_POINTS, DEFAULT_SEED,
     WHITE, BLACK, Movement, NEAT_VIZ_X, NEAT_VIZ_Y, 
-    NEAT_VIZ_WIDTH, NEAT_VIZ_HEIGHT
+    NEAT_VIZ_WIDTH, NEAT_VIZ_HEIGHT, SPEED_TEST_MULTIPLIER
 )
 from model.model import *
 from misc.probability_functions import *
@@ -48,9 +48,10 @@ class TetrisGameWithAI:
         # test
         self.hard_drop_count = 0
         self.move_count = 0
+        self.final_average_board_height = 0.0
         
         # AI controller
-        self.ai_controller = AIController(model=ai_model, move_selection_probability_function=Softmax())
+        self.ai_controller = AIController(model=ai_model, move_selection_probability_function=TemperatureProb())
         
         # NEAT visualizer
         self.neat_visualizer = NEATVisualizer(NEAT_VIZ_X, NEAT_VIZ_Y, NEAT_VIZ_WIDTH, NEAT_VIZ_HEIGHT)
@@ -63,7 +64,7 @@ class TetrisGameWithAI:
         self.next_tetromino = get_random_tetromino(x=5, y=0, rng=self.rng)
         
         # Initialize timing
-        self.last_fall_time = time.time()
+        self.last_fall_time = time.time_ns()
         self.fall_speed = INITIAL_FALL_SPEED / 1000  # Convert to seconds
         self.soft_drop = False
         
@@ -87,20 +88,20 @@ class TetrisGameWithAI:
                 #self.csv_logger.reset()
                 
                 # for the time being, here we can mutate the model
-                if self.ai_controller.model.genome.rng.random() < self.ai_controller.model.genome.common_rates.node_addition_mutation_rate:
-                    self.ai_controller.model.genome.mutation_add_node() # test
-                    self.ai_controller.model.phenotype = Model.topological_sort(self.ai_controller.model.genome.nodes, self.ai_controller.model.genome.connections)
-                    print('Node added to the genome')
-                    
-                if self.ai_controller.model.genome.rng.random() < self.ai_controller.model.genome.common_rates.connection_addition_mutation_rate:
-                    self.ai_controller.model.genome.mutation_add_connection() # test
-                    self.ai_controller.model.phenotype = Model.topological_sort(self.ai_controller.model.genome.nodes, self.ai_controller.model.genome.connections)
-                    print('Connection added to the genome')
-                
-                self.ai_controller.model = Model(genome=self.ai_controller.model.genome, previous_network_fitness=self.score)
-                misc.visualizers.visualize_phenotype(self.ai_controller.model.genome, title="Phenotype Visualization")
-                self.__init__(self.seed, self.ai_controller.model)  # Reset the game
-            return
+                #if self.ai_controller.model.genome.rng.random() < self.ai_controller.model.genome.common_rates.node_addition_mutation_rate:
+                #    self.ai_controller.model.genome.mutation_add_node() # test
+                #    self.ai_controller.model.phenotype = Model.topological_sort(self.ai_controller.model.genome.nodes, self.ai_controller.model.genome.connections)
+                #    print('Node added to the genome')
+                #    
+                #if self.ai_controller.model.genome.rng.random() < self.ai_controller.model.genome.common_rates.connection_addition_mutation_rate:
+                #    self.ai_controller.model.genome.mutation_add_connection() # test
+                #    self.ai_controller.model.phenotype = Model.topological_sort(self.ai_controller.model.genome.nodes, self.ai_controller.model.genome.connections)
+                #    print('Connection added to the genome')
+                #
+                #self.ai_controller.model = Model(genome=self.ai_controller.model.genome, previous_network_fitness=self.score)
+                #misc.visualizers.visualize_phenotype(self.ai_controller.model.genome, title="Phenotype Visualization")
+                #self.__init__(self.seed, self.ai_controller.model)  # Reset the game
+                return
             
         if key == pygame.K_p:
             self.paused = not self.paused
@@ -194,6 +195,7 @@ class TetrisGameWithAI:
         # Add the current tetromino to the board
         if not self.board.add_tetromino(self.current_tetromino):
             self.game_over = True
+            self.final_average_board_height = sum(self.board.average_heights) / float(len(self.board.average_heights))
             self.cleanup()
             return
             
@@ -212,7 +214,7 @@ class TetrisGameWithAI:
         if self.game_over or self.paused:
             return
             
-        current_time = time.time()
+        current_time = time.time_ns()
         
         # Check if any lines need to be cleared
         lines_cleared = self.board.update_clear_animation()
@@ -228,17 +230,18 @@ class TetrisGameWithAI:
                 self.level = new_level
                 self.fall_speed *= LEVEL_SPEEDUP
         
-        # Process AI move
-        ai_move_data = self.ai_controller.get_next_move()
-        if ai_move_data:
-            self.process_ai_move(ai_move_data)
                 
         # Check if it's time for the tetromino to fall
-        fall_time = self.fall_speed
-        if self.soft_drop:
-            fall_time *= 0.1  # Move down 10x faster when soft dropping
+        fall_time = self.fall_speed / SPEED_TEST_MULTIPLIER
+        #if self.soft_drop:
+        #    fall_time *= 0.1  # Move down 10x faster when soft dropping
             
         if current_time - self.last_fall_time > fall_time:
+            # Process AI move, temporary once per fall time
+            ai_move_data = self.ai_controller.get_next_move()
+            if ai_move_data:
+                self.process_ai_move(ai_move_data)
+                
             # Try to move the tetromino down
             if not self.move_tetromino(0, 1):
                 # If the tetromino can't move down, lock it in place
@@ -298,8 +301,9 @@ class TetrisGameWithAI:
         #    'chosen_probability': chosen_probability
         #}
         #self.csv_logger.log_move(log_data)
-         
+        
         self.move_count += 1
+        #print(f'Current move: {self.move_count}')
         if move == Movement.MOVE_LEFT:
             #print('Moving left.')
             self.move_tetromino(-1, 0)
@@ -313,7 +317,7 @@ class TetrisGameWithAI:
         #    print('Soft drop done.')
         #    self.soft_drop = True
         elif move == Movement.HARD_DROP:
-        #    print('Hard drop d(-__-)b.')
+            #print('Hard drop d(-__-)b.')
             self.hard_drop_count += 1
             self.hard_drop()
         elif move == Movement.NO_MOVE:

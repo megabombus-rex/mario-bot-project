@@ -159,7 +159,8 @@ class Genome:
         node_id = self.innovation_db.get_or_create_node_id(connection_to_split.innovation_number)
         connection_to_split.is_disabled = True
                     
-        activation_function = self.rng.choice([ReLU(), Sigmoid()])
+        #activation_function = self.rng.choice([ReLU(), Sigmoid()])
+        activation_function = Sigmoid()
         new_node = NodeGene(node_id, HIDDEN_NODE, activation_function)
         
         innov_1 = self.innovation_db.get_or_create_connection_innovation(connection_to_split.in_node.id, new_node.id)
