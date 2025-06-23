@@ -3,7 +3,7 @@ from model.model import *
 from model.model_constants import INPUT_NETWORK_SIZE, OUTPUT_NETWORK_SIZE
 from simulation.sim_constants import (FITNESS_MULITPLIER_LC, HARD_DROP_COUNT_PENALTY_MULTIPLIER, 
                                       LIFETIME_VALUE_MULTIPLIER, ALMOST_CLEARED_LINES_MULTIPLIER, 
-                                      HEIGHT_PENALTY_MULTIPLIER, GAME_OVER_PENALTY, POSITIONING_BONUS_MULTIPLIER)
+                                      HEIGHT_PENALTY_MULTIPLIER, GAME_OVER_PENALTY, POSITIONING_BONUS_MULTIPLIER, NUM_THREADS)
 from game.model_scripts.game_with_ai import TetrisGameWithAI
 from game.constants import DEFAULT_SEED, FPS, ALMOST_COMPLETE_LINES_BLOCK_COUNT
 from model.genome import InnovationDatabase
@@ -12,6 +12,8 @@ import numpy as np
 import pygame
 import sys
 import time
+import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from collections import deque
 
 class ExpSpecimen:
@@ -83,7 +85,7 @@ class Experiment:
         mean_hard_drop_percent = []
         
         # previous pruning
-        previous_avg = deque()
+        # previous_avg = deque()
         
         # main 'training' loop
         while (current_iteration <= self.iteration_count):
@@ -98,7 +100,11 @@ class Experiment:
             moves = 0
             max_move_count = 1000
             current_pop = 1
-            for specimen in population:
+            
+            batch_size = NUM_THREADS
+            total_specimens = len(population)
+            
+            """ for specimen in population:
                 #print(f'Specimen {current_pop}')
                 current_pop += 1
                 game = TetrisGameWithAI(seed=DEFAULT_SEED, ai_model=specimen.model)
@@ -154,7 +160,81 @@ class Experiment:
             # overwrite diagrams per iteration
             draw_diagrams(generations=self.iteration_count,mean_scores=mean_fitnesses, mean_runtimes=mean_runtime, mean_clearedLines=mean_clearedLines, 
                           best_fitness=best_specimen.fitness, pop_size=self.population_size, common_rates=self.common_rates, 
-                          fps_recordered=FPS, max_lines=max_lines_cleared, iteration_lines=iteration_for_lines)
+                          fps_recordered=FPS, max_lines=max_lines_cleared, iteration_lines=iteration_for_lines) """
+            
+            for batch_start in range(0, total_specimens, batch_size):
+                batch_end = min(batch_start + batch_size, total_specimens)
+                current_batch = population[batch_start:batch_end]
+        
+                print(f'Processing batch {batch_start//batch_size + 1}/{(total_specimens + batch_size - 1)//batch_size} '
+                    f'(specimens {batch_start+1}-{batch_end})')
+        
+                # Handle pygame events in main thread
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        sys.exit()
+        
+                # Run specimens in parallel using ThreadPoolExecutor
+                with ThreadPoolExecutor(max_workers=NUM_THREADS) as executor:
+                    # Submit all specimens in current batch
+                    future_to_specimen = {
+                        executor.submit(
+                            self._evaluate_specimen, 
+                            specimen, 
+                            DEFAULT_SEED, 
+                            max_move_count, 
+                            FPS, 
+                            self._calculate_fitness
+                        ): specimen for specimen in current_batch
+                    }
+            
+                    # Collect results as they complete
+                    for future in as_completed(future_to_specimen):
+                        specimen, results = future.result()
+                        
+                        # Update iteration statistics
+                        fitnessSumPerIt += results['fitness']
+                        runtimeSum_s_PerIt += results['runtime']
+                        clearedLinesPerIt += results['lines_cleared']
+                        hard_drops += results['hard_drop_count']
+                        moves += results['move_count']
+                        
+                        # Check for new records
+                        if max_lines_cleared < results['lines_cleared']:
+                            max_lines_cleared = results['lines_cleared']
+                            iteration_for_lines = current_iteration
+                        
+                        if results['fitness'] > best_fitness_ever:
+                            best_fitness_ever = results['fitness']
+                            best_specimen = specimen
+                            print(f'Best specimen changed fitness to: {best_specimen.fitness}')
+                        
+                        print(f'Specimen evaluated - Fitness: {results["fitness"]:.2f}, '
+                            f'Lines: {results["lines_cleared"]}, Runtime: {results["runtime"]:.2f}s')
+            
+            # Calculate iteration averages
+            avg_fitness = fitnessSumPerIt / fl_popSize
+            move_count_percent = hard_drops / float(moves) if moves > 0 else 0
+            mean_hard_drop_percent.append(move_count_percent)
+            avg_time = runtimeSum_s_PerIt / fl_popSize
+            avg_linesCleared = clearedLinesPerIt / fl_popSize
+            mean_fitnesses.append(avg_fitness)
+            
+            print(f'Mean fitness: {avg_fitness}, iteration: {current_iteration}')
+            print(f'Mean moves per game: {moves / fl_popSize}, iteration: {current_iteration}')
+            
+            mean_runtime.append(avg_time)
+            mean_clearedLines.append(avg_linesCleared)
+            
+            # overwrite diagrams per iteration
+            draw_diagrams(
+            generations=self.iteration_count, mean_scores=mean_fitnesses, 
+            mean_runtimes=mean_runtime, mean_clearedLines=mean_clearedLines,
+            best_fitness=best_specimen.fitness, pop_size=self.population_size, 
+            common_rates=self.common_rates, fps_recordered=FPS, 
+            max_lines=max_lines_cleared, iteration_lines=iteration_for_lines
+            )
             
             # sort population by fitness (descending order)
             sorted_population = sorted(population, key=lambda x: x.fitness, reverse=True)
@@ -281,3 +361,39 @@ class Experiment:
         copied_genome = specimen.model.genome.copy()
         copied_model = Model(genome=copied_genome, previous_network_fitness=specimen.fitness)
         return ExpSpecimen(copied_model, specimen.fitness)
+    
+    def _evaluate_specimen(self, specimen, seed, max_move_count, fps, calculate_fitness_func):
+        game = TetrisGameWithAI(seed=seed, ai_model=specimen.model)
+        clock = pygame.time.Clock()
+        
+        start = time.time()
+        while not game.game_over:
+            # Note: We can't handle pygame events in threads, so we'll skip this
+            # The main thread should handle pygame.QUIT events
+            game.update()
+            clock.tick(fps)
+            if game.move_count >= max_move_count:
+                print(f'Time is up for specimen (thread {threading.current_thread().name})')
+                break
+        
+        runtime = time.time() - start
+        almost_cleared = game.board.get_almost_complete_lines(ALMOST_COMPLETE_LINES_BLOCK_COUNT).count(1)
+        avg_height = game.final_average_board_height
+        
+        fitness = calculate_fitness_func(
+            game.score, game.lines_cleared, game.move_count, game.hard_drop_count,
+            almost_cleared_lines_count=almost_cleared, 
+            average_board_height=avg_height, 
+            is_game_over=game.game_over
+        )
+        
+        specimen.fitness = fitness
+        
+        return specimen, {
+            'runtime': runtime,
+            'lines_cleared': game.lines_cleared,
+            'hard_drop_count': game.hard_drop_count,
+            'move_count': game.move_count,
+            'score': game.score,
+            'fitness': fitness
+        }
