@@ -72,9 +72,9 @@ class TetrisGameWithAI:
         self.ghost_y_offset = self.calculate_drop_position()
         
         # Load font for text rendering
-        pygame.font.init()
-        self.font = pygame.font.SysFont('Arial', 24)
-        self.large_font = pygame.font.SysFont('Arial', 36)
+        #pygame.font.init()
+        #self.font = pygame.font.SysFont('Arial', 24)
+        #self.large_font = pygame.font.SysFont('Arial', 36)
         
     def handle_input(self, key):
         """

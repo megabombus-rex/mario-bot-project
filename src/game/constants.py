@@ -4,7 +4,7 @@ from enum import IntEnum
 SCREEN_WIDTH = 1200  
 SCREEN_HEIGHT = 700
 TITLE = "Team Tetris"
-FPS = 9600
+FPS = 4800
 
 # Board dimensions
 GRID_WIDTH = 10
@@ -60,7 +60,7 @@ COLORS = {
 
 # Game timing (milliseconds)
 INITIAL_FALL_SPEED = 1  # 1 second
-SPEED_TEST_MULTIPLIER = 100.0
+SPEED_TEST_MULTIPLIER = 10.0
 LEVEL_SPEEDUP = 0.8  # Each level is 20% faster than the previous level
 EMPIRICAL_MAX_SPEED = 10000 # this can be changed
 SOFT_DROP_FACTOR = 0.1  # Soft drop is 10x faster than normal

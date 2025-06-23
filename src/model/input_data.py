@@ -42,9 +42,9 @@ class InputDataExtended:
             self.column_9 = columns_normalized[8]
             self.column_10 = columns_normalized[9]
         self.drop_distance = drop_distance
-        self.almost_complete_lines = almost_complete_lines # 20 inputs (GRID_HEIGHT)
+        #self.almost_complete_lines = almost_complete_lines # 20 inputs (GRID_HEIGHT)
         self.height_differences = height_differences_normalized # 10 inputs (GRID_WIDTH)
-        self.board_state = board_state # 200 inputs (GRID_HEIGHT * GRID_WIDTH)
+        #self.board_state = board_state # 200 inputs (GRID_HEIGHT * GRID_WIDTH)
         
     def to_dict(self):
         #dict = {
@@ -88,16 +88,16 @@ class InputDataExtended:
         
         dict_len = len(dict) # in the case 0-14, len = 15, i = 0 -> dict[15 + 0] = next value
         
-        for i, value in enumerate(self.almost_complete_lines):
-            dict[dict_len + i] = value
-            
-        dict_len = len(dict) # update after last list
+        #for i, value in enumerate(self.almost_complete_lines):
+        #    dict[dict_len + i] = value
+        #    
+        #dict_len = len(dict) # update after last list
         
         for i, value in enumerate(self.height_differences):
             dict[dict_len + i] = value
             
-        dict_len = len(dict) # update after last list
-                
-        for i, value in enumerate(self.board_state):
-            dict[dict_len + i] = value
+        #dict_len = len(dict) # update after last list
+        #        
+        #for i, value in enumerate(self.board_state):
+        #    dict[dict_len + i] = value
         return dict

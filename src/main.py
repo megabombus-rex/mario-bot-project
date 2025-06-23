@@ -7,6 +7,7 @@ from model.input_data import InputData
 from model.common_genome_data import *
 from game.model_scripts.game_with_ai import *
 from simulation.test_sim import *
+from visualize_moves import *
 
 def main(seed, ai_model):
     # Initialize pygame
@@ -51,15 +52,16 @@ def main(seed, ai_model):
         clock.tick(FPS)
 
 def experiment(common_rates:CommonRates):
-    exp = Experiment(iteration_count=10, population_size=20, tournament_size=5, common_rates=common_rates)
+    exp = Experiment(iteration_count=201, population_size=200, tournament_size=10, elite_size_percent=0.1, enable_pruning=False, prune_percent=0.1, stagnation_mean_percent=0.1, common_rates=common_rates)
     exp()
     
 
 if __name__ == "__main__":
-    common_rates = CommonRates(0.5, 0.8, 0.1, 0.4, 0.2, 0.6, 5)
+    common_rates = CommonRates(crossover_rate=0.7, weight_mutation_rate=0.4, activation_mutation_rate=0.1, 
+                               connection_addition_mutation_rate=0.3, node_addition_mutation_rate=0.05, connection_change_mutation_rate=0.1, 
+                               start_connection_probability=0.6, max_start_connection_count=5)
     #innovation_db = InnovationDatabase(11) # (input size + output size -1) is the beginning node count
-    #model = Model.generate_network(input_size=6, output_size=6, common_rates=common_rates, innovation_db=innovation_db, seed=DEFAULT_SEED_MODEL)
-    #input = InputData(10, 20, 25, 30, 40, 50)
-    #model(input=input)
     #main(DEFAULT_SEED, model)
     experiment(common_rates)
+    #visualizer = MoveVisualizer('logs/ai_moves_seed[42].csv', 42, playback_speed=1)
+    #visualizer.run()

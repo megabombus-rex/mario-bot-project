@@ -58,3 +58,104 @@ Elite = 10%
 Best found fitness: 1891
 Max lines 1 in iteration 4
 Diagram: It_100_pop1000_CxR0.6_WMR0.4_AFR0.1_CAMR0.3_NAMR0.05_SCP0.6_MaxSC_5_np.png
+==================================================================================================================================== - porównanie tego dla 3 kolejnych modeli ze zmniejszonymi inputami
+200 population, 200 iterations,
+
+244 inputs - board state (200); max column heights (10); height differences (9); x,y,rotation,shape_idx (4); drop distance (1); almost complete lines (20)
+5 outputs - LEFT, RIGHT, ROTATION, NO_MOVE, HARD_DROP
+
+Crossover Rate: 0.7, 
+Weight Mutation Rate: 0.4, Activation Mutation Rate: 0.1, Connection Addition Mutation Rate: 0.3, Node Addition Mutation Rate: 0.05
+Start Connections: 5
+
+FITNESS_MULITPLIER_LC = 700
+HARD_DROP_COUNT_PENALTY_MULTIPLIER = 1
+LIFETIME_VALUE_MULTIPLIER = 15
+ALMOST_CLEARED_LINES_MULTIPLIER = 25
+HEIGHT_PENALTY_MULTIPLIER = 10
+GAME_OVER_PENALTY = 350
+POSITIONING_BONUS_MULTIPLIER = 10
+
+Max movements = 100 + (100 per 50 iterations)
+
+Elite = 10%
+
+Best found fitness: 2071
+Max lines:
+Diagram: It_300_pop200_CxR0.7_WMR0.4_AFR0.1_CAMR0.3_NAMR0.05_SCP0.6_MaxSC_5_np.png
+
+====================================================================================================================================
+200 population, 200 iterations,
+
+44 inputs - max column heights (10); height differences (9); x,y,rotation,shape_idx (4); drop distance (1); almost complete lines (20)
+5 outputs - LEFT, RIGHT, ROTATION, NO_MOVE, HARD_DROP
+
+Crossover Rate: 0.7, 
+Weight Mutation Rate: 0.4, Activation Mutation Rate: 0.1, Connection Addition Mutation Rate: 0.3, Node Addition Mutation Rate: 0.05
+Start Connections: 5
+
+FITNESS_MULITPLIER_LC = 700
+HARD_DROP_COUNT_PENALTY_MULTIPLIER = 1
+LIFETIME_VALUE_MULTIPLIER = 15
+ALMOST_CLEARED_LINES_MULTIPLIER = 25
+HEIGHT_PENALTY_MULTIPLIER = 10
+GAME_OVER_PENALTY = 350
+POSITIONING_BONUS_MULTIPLIER = 10
+
+Max movements = 100 + (100 per 50 iterations)
+
+Elite = 10%
+
+Best found fitness: 2071
+Max lines:
+Diagram: It_200_pop200_CxR0.7_WMR0.4_AFR0.1_CAMR0.3_NAMR0.05_SCP0.6_MaxSC_5_np.png - zmieniona nazwa z It_300 na It_200 żeby szybciej było xd
+
+====================================================================================================================================
+200 population, 200 iterations,
+
+24 inputs - max column heights (10); height differences (9); x,y,rotation,shape_idx (4); drop distance (1); 
+5 outputs - LEFT, RIGHT, ROTATION, NO_MOVE, HARD_DROP
+
+Crossover Rate: 0.7, 
+Weight Mutation Rate: 0.4, Activation Mutation Rate: 0.1, Connection Addition Mutation Rate: 0.3, Node Addition Mutation Rate: 0.05
+Start Connections: 5
+
+FITNESS_MULITPLIER_LC = 700
+HARD_DROP_COUNT_PENALTY_MULTIPLIER = 1
+LIFETIME_VALUE_MULTIPLIER = 15
+ALMOST_CLEARED_LINES_MULTIPLIER = 25
+HEIGHT_PENALTY_MULTIPLIER = 10
+GAME_OVER_PENALTY = 350
+POSITIONING_BONUS_MULTIPLIER = 10
+
+Max movements = 100 + (100 per 50 iterations)
+
+Elite = 10%
+
+Best found fitness: 2071
+Max lines:
+Diagram: It_201_pop200_CxR0.7_WMR0.4_AFR0.1_CAMR0.3_NAMR0.05_SCP0.6_MaxSC_5_np.png - zmieniona nazwa z It_300 na It_200 żeby szybciej było xd
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
