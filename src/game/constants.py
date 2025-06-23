@@ -4,7 +4,7 @@ from enum import IntEnum
 SCREEN_WIDTH = 1200  
 SCREEN_HEIGHT = 700
 TITLE = "Team Tetris"
-FPS = 1200
+FPS = 9600
 
 # Board dimensions
 GRID_WIDTH = 10
@@ -12,22 +12,24 @@ GRID_HEIGHT = 20
 CELL_SIZE = 30
 
 # Movement mapping
-class Movement(IntEnum):
-    MOVE_LEFT = 0
-    MOVE_RIGHT = 1
-    ROTATE = 2
-    SOFT_DROP = 3
-    HARD_DROP = 4
-    NO_MOVE = 5
-
-# output!!
-    
 #class Movement(IntEnum):
 #    MOVE_LEFT = 0
 #    MOVE_RIGHT = 1
 #    ROTATE = 2
-#    NO_MOVE = 3
+#    SOFT_DROP = 3
 #    HARD_DROP = 4
+#    NO_MOVE = 5
+
+ALMOST_COMPLETE_LINES_BLOCK_COUNT = 3
+
+# output!!
+    
+class Movement(IntEnum):
+    MOVE_LEFT = 0
+    MOVE_RIGHT = 1
+    ROTATE = 2
+    NO_MOVE = 3
+    HARD_DROP = 4
 
 # Board position
 BOARD_OFFSET_X = (SCREEN_WIDTH - GRID_WIDTH * CELL_SIZE) // 2
@@ -57,7 +59,8 @@ COLORS = {
 }
 
 # Game timing (milliseconds)
-INITIAL_FALL_SPEED = 1000  # 1 second
+INITIAL_FALL_SPEED = 1  # 1 second
+SPEED_TEST_MULTIPLIER = 100.0
 LEVEL_SPEEDUP = 0.8  # Each level is 20% faster than the previous level
 EMPIRICAL_MAX_SPEED = 10000 # this can be changed
 SOFT_DROP_FACTOR = 0.1  # Soft drop is 10x faster than normal
@@ -78,7 +81,7 @@ KEY_DELAY = 200
 KEY_INTERVAL = 100
 
 # Seed for randomization (if needed), those seeds should be different
-DEFAULT_SEED = None
+DEFAULT_SEED = 125 #None
 DEFAULT_SEED_MODEL = 12345
 
 # NEAT Network Visualizer window positioning consts

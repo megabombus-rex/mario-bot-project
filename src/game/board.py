@@ -14,6 +14,7 @@ class Board:
         self.clear_animation_counter = 0
         self._divide_into_areas(area_count=area_count)
         self.area_count = area_count
+        self.average_heights = []
         
     #   It should be like this
     #   1   2
@@ -73,13 +74,17 @@ class Board:
                 col_height -= 1
                 row -= 1
             columns.append(col_height)
+        self.average_heights.append(sum(columns) / float(len(columns)))
         return columns
+    
+    def get_almost_complete_lines(self, almost_complete_max_block_count:int):
+        return [1 if row.count(None) <= almost_complete_max_block_count else 0 for row in self.grid]
     
     def get_board_state_flattened(self):
         flattened = []
         for row in self.grid:
             for cell in row:
-                flattened.append(1 if cell is not None else 0)  # 1 for filled, 0 for empty
+                flattened.append(-1 if cell is not None else 0)  # -1 for filled, 0 for empty
         return flattened
                 
     

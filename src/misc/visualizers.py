@@ -265,7 +265,7 @@ def visualize_phenotype(genome, title="Phenotype Visualization"):
         print(f"Layer {layer_num}: {', '.join(nodes_info)}")
     
 
-def draw_diagrams(mean_scores, mean_runtimes, mean_clearedLines, best_fitness, pop_size, common_rates:CommonRates, fps_recordered=60):
+def draw_diagrams(generations, mean_scores, mean_runtimes, mean_clearedLines, best_fitness, pop_size, common_rates:CommonRates, max_lines, iteration_lines, fps_recordered=60, pruning_enabled: bool=False):
     # the mean values are corresponding to iterations (ordered)
     iterations = range(1, len(mean_scores) + 1)
     fig, (ax_sc, ax_rt, ax_cl, ax_sc_rt)  = plt.subplots(1, 4, figsize=(18, 18))
@@ -282,13 +282,13 @@ def draw_diagrams(mean_scores, mean_runtimes, mean_clearedLines, best_fitness, p
     ax_sc_rt.set(xlabel='Runtime', ylabel='Score') 
     ax_sc_rt.set_title('Runtime vs Score (mean)')
     
-    fig.suptitle(f'Parameters: CxR: {common_rates.crossover_rate}, WMR: {common_rates.weight_mutation_rate}, AFR: {common_rates.activation_mutation_rate}, CAMR: {common_rates.connection_addition_mutation_rate}, NAMR: {common_rates.node_addition_mutation_rate}, SCP: {common_rates.start_connection_probability}, MaxSC: {common_rates.max_start_connection_count}  FPS: {fps_recordered}, Best fitness: {best_fitness}')
+    fig.suptitle(f'Parameters: CxR: {common_rates.crossover_rate}, WMR: {common_rates.weight_mutation_rate}, AFR: {common_rates.activation_mutation_rate}, CAMR: {common_rates.connection_addition_mutation_rate}, NAMR: {common_rates.node_addition_mutation_rate}, SCP: {common_rates.start_connection_probability}, MaxSC: {common_rates.max_start_connection_count}  FPS: {fps_recordered}, Best fitness: {best_fitness}, Max lines: {max_lines} at iteration {iteration_lines}')
     ax_sc.plot(iterations, mean_scores, 'tab:green')
     ax_rt.plot(iterations, mean_runtimes, 'tab:blue')
     ax_cl.plot(iterations, mean_clearedLines, 'tab:red')
     ax_sc_rt.scatter(mean_runtimes, mean_scores, c='tab:orange')
-    fig.savefig(f'It_{len(mean_scores)}_pop{pop_size}_CxR{common_rates.crossover_rate}_WMR{common_rates.weight_mutation_rate}_AFR{common_rates.activation_mutation_rate}_CAMR{common_rates.connection_addition_mutation_rate}_NAMR{common_rates.node_addition_mutation_rate}_SCP{common_rates.start_connection_probability}_MaxSC_{common_rates.max_start_connection_count}.png')
-    
+    fig.savefig(f'results/It_{generations}_pop{pop_size}_CxR{common_rates.crossover_rate}_WMR{common_rates.weight_mutation_rate}_AFR{common_rates.activation_mutation_rate}_CAMR{common_rates.connection_addition_mutation_rate}_NAMR{common_rates.node_addition_mutation_rate}_SCP{common_rates.start_connection_probability}_MaxSC_{common_rates.max_start_connection_count}_{'p' if pruning_enabled else 'np'}.png')
+    plt.close()
     #plt.scatter(mean_runtimes, mean_scores)
     #plt.xlabel('Mean runtime')
     #plt.ylabel('Mean score')
