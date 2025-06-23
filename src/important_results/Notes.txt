@@ -1,0 +1,60 @@
+200 population, 400 iterations, 
+Crossover Rate: 0.6, 
+Weight Mutation Rate: 0.5, Activation Mutation Rate: 0.1, Connection Addition Mutation Rate: 0.3, Node Addition Mutation Rate: 0.05
+Start Connections: 6
+
+44 inputs
+5 outputs - LEFT, RIGHT, ROTATION, NO_MOVE, HARD_DROP
+
+Fitness multipliers and penalties: 
+FITNESS_MULITPLIER_LC = 500
+HARD_DROP_COUNT_PENALTY_MULTIPLIER = 1
+LIFETIME_VALUE_MULTIPLIER = 15
+ALMOST_CLEARED_LINES_MULTIPLIER = 10
+HEIGHT_PENALTY_MULTIPLIER = 10
+GAME_OVER_PENALTY = 100
+POSITIONING_BONUS_MULTIPLIER = 5
+
+Elite = 10%
+
+Best found fitness: 1145
+Max lines: - 1, idk where
+Diagram: - none
+====================================================================================================================================
+Population 40, 1000 iterations
+
+244 inputs
+5 outputs - LEFT, RIGHT, ROTATION, NO_MOVE, HARD_DROP
+
+FITNESS_MULITPLIER_LC = 500
+HARD_DROP_COUNT_PENALTY_MULTIPLIER = 1
+LIFETIME_VALUE_MULTIPLIER = 15
+ALMOST_CLEARED_LINES_MULTIPLIER = 20
+HEIGHT_PENALTY_MULTIPLIER = 10
+GAME_OVER_PENALTY = 200
+POSITIONING_BONUS_MULTIPLIER = 10
+
+Elite = 10%
+
+Best found fitness: 1525
+Max lines: 1 in iteration 168
+Diagram: It_1000_pop40_CxR0.6_WMR0.5_AFR0.1_CAMR0.3_NAMR0.05_SCP0.6_MaxSC_5_np.png
+====================================================================================================================================
+1000 population, 100 iterations,
+Crossover Rate: 0.6, 
+Weight Mutation Rate: 0.4, Activation Mutation Rate: 0.1, Connection Addition Mutation Rate: 0.3, Node Addition Mutation Rate: 0.05
+Start Connections: 5
+
+FITNESS_MULITPLIER_LC = 500
+HARD_DROP_COUNT_PENALTY_MULTIPLIER = 1
+LIFETIME_VALUE_MULTIPLIER = 15
+ALMOST_CLEARED_LINES_MULTIPLIER = 20
+HEIGHT_PENALTY_MULTIPLIER = 10
+GAME_OVER_PENALTY = 200
+POSITIONING_BONUS_MULTIPLIER = 10
+
+Elite = 10%
+
+Best found fitness: 1891
+Max lines 1 in iteration 4
+Diagram: It_100_pop1000_CxR0.6_WMR0.4_AFR0.1_CAMR0.3_NAMR0.05_SCP0.6_MaxSC_5_np.png

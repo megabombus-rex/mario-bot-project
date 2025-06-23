@@ -1,14 +1,15 @@
 Inputs (normalized):
 x, y
 block_type,
-fall_speed,
+fall_speed, - removed
 rotation,
-column_1-10
+column_1-10 - this can be changed to differences between columns (1vs2, 2vs3, 3vs4 etc)
 drop_distance
 
 potential changes to inputs:
-almost (?) complete lines count
-bumpiness
+almost (?) complete lines count - done
+bumpiness - maybe
+
 
 outputs:
 0 - left
@@ -30,4 +31,6 @@ fitness:
 potential changes to fitness:
 change multiplier
 add lifetime with multiplier (move_count or time, potential issues corresponding to FPS per test, maybe scale by this value)
-gameover = penalty (big)
+gameover = penalty (big) - added
+
+elitism as a percent (10 currently) of the population
